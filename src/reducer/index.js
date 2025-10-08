@@ -1,12 +1,12 @@
 import { combineReducers } from "@reduxjs/toolkit";
 import serverErrorReducer from "./serverSlice";
 import authReducer from "./authSlice";
-import caretakerReducer from "./careTakerSlice";
+import patientReducer from "./patientSlice";
 
 const rootReducer = combineReducers({
   serverError: serverErrorReducer,
   auth: authReducer,
-  caretaker: caretakerReducer,
+  patient: patientReducer,
 });
 
 export default rootReducer;

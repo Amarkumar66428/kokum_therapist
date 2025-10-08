@@ -3,9 +3,22 @@ import { Button, Typography, Box, Container } from "@mui/material";
 import welcomeSvg from "../../assets/svg/welcome.svg";
 import welcomeTitleSvg from "../../assets/svg/welcomeTitle.svg";
 import { useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
 
 const LandingPage = () => {
   const navigate = useNavigate();
+
+  const handleClick = () => {
+    const isAuthenticated = Cookies.get("token") && Cookies.get("self");
+    if (isAuthenticated) {
+      navigate("/patientProfile");
+    } else {
+      localStorage.clear();
+      Cookies.remove("token");
+      Cookies.remove("self");
+      navigate("/signin");
+    }
+  };
 
   return (
     <Container maxWidth={false}>
@@ -52,7 +65,7 @@ const LandingPage = () => {
               bgcolor: "#fff",
               textTransform: "none",
             }}
-            onClick={() => navigate("/signin")}
+            onClick={handleClick}
           >
             Get Started
           </Button>

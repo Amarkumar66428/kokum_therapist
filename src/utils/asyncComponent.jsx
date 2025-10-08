@@ -1,110 +1,88 @@
-import React, { lazy, Suspense, memo, useState, useEffect } from "react";
+import React, { lazy, Suspense } from "react";
 import { Box, CircularProgress } from "@mui/material";
 
 const componentCache = new WeakMap();
 
-const asyncComponent = (
+const defaultFallback = (
+  <Box
+    sx={{
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "center",
+      alignItems: "center",
+      gap: 2,
+      height: "100vh",
+    }}
+  >
+    <img src="src/assets/svg/welcomeTitle.svg" alt="Loading..." />
+    <CircularProgress color="inherit" />
+  </Box>
+);
+
+function asyncComponent(
   importFunc,
   {
-    fallback = (
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-          gap: 2,
-          height: "100vh",
-        }}
-      >
-        <img src="src/assets/svg/welcomeTitle.svg" alt="Loading..." />
-        <CircularProgress color="inherit" />
-      </Box>
-    ),
+    fallback = defaultFallback,
     errorFallback = <div>Error loading component</div>,
     displayName = "AsyncComponent",
     retryCount = 3,
   } = {}
-) => {
+) {
   if (componentCache.has(importFunc)) {
     return componentCache.get(importFunc);
   }
 
-  const LazyComponent = lazy(() => {
+  const LazyComponent = lazy(async () => {
     let attempts = 0;
 
-    const tryImport = async () => {
+    while (attempts < retryCount) {
       try {
         return await importFunc();
       } catch (error) {
         attempts++;
+        console.error(`${displayName} load attempt ${attempts} failed`, error);
 
-        if (attempts < retryCount && error.name === "ChunkLoadError") {
+        // Retry only if it's a chunk error
+        if (error.name === "ChunkLoadError" && attempts < retryCount) {
           await new Promise((res) => setTimeout(res, 2 ** attempts * 500));
-          return tryImport();
+          continue;
         }
 
-        console.error(
-          `${displayName} failed after ${attempts} attempts`,
-          error
-        );
         return { default: () => errorFallback };
       }
-    };
+    }
 
-    return tryImport();
+    return { default: () => errorFallback };
   });
 
-  const WrappedComponent = memo(
-    (props) => {
-      const [loading, setLoading] = useState(true);
-
-      useEffect(() => {
-        const timer = setTimeout(() => setLoading(false), 300); // Small buffer
-        return () => clearTimeout(timer);
-      }, []);
-
-      return (
-        <>
-          {loading && fallback}
-          <Suspense
-            fallback={null} // avoid replacing content
-          >
-            <LazyComponent {...props} />
-          </Suspense>
-        </>
-      );
-    },
-    (prev, next) => {
-      const prevKeys = Object.keys(prev);
-      const nextKeys = Object.keys(next);
-      return (
-        prevKeys.length === nextKeys.length &&
-        prevKeys.every((key) => prev[key] === next[key])
-      );
-    }
+  const WrappedComponent = (props) => (
+    <Suspense fallback={fallback}>
+      <LazyComponent {...props} />
+    </Suspense>
   );
 
   WrappedComponent.displayName = `Async(${displayName})`;
+
+  // Helper methods
   WrappedComponent.preload = () => importFunc().catch(() => {});
   WrappedComponent.isLoaded = () => componentCache.has(importFunc);
 
   componentCache.set(importFunc, WrappedComponent);
-
   return WrappedComponent;
-};
+}
 
-export default asyncComponent;
-
-// Factory
+// Factory for consistent options
 asyncComponent.createFactory =
   (defaultOptions = {}) =>
   (importFunc, options = {}) =>
     asyncComponent(importFunc, { ...defaultOptions, ...options });
 
+// Preload all components
 asyncComponent.preloadAll = (components) =>
   Promise.allSettled(
     components.map((c) =>
       typeof c.preload === "function" ? c.preload() : Promise.resolve()
     )
   );
+
+export default asyncComponent;

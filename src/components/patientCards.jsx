@@ -8,13 +8,14 @@ import {
   Stack,
   Collapse,
   alpha,
+  Modal,
+  Paper,
 } from "@mui/material";
 import { Leaderboard } from "@mui/icons-material";
-import PolarChart from "./polarChart";
 import { FontSize } from "../constant/lookUpConstant";
 import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import { setCareTaker } from "../reducer/careTakerSlice";
+import usePatient from "../hooks/usePatient";
+import PolarChart from "./polarChart";
 
 const ACTIVITY_COLORS = [
   "#ef8548",
@@ -30,10 +31,15 @@ const ACTIVITY_COLORS = [
 ];
 
 const PatientCard = ({ patient }) => {
-  console.log("patient: ", patient);
   const navigate = useNavigate();
+  const { setPatient } = usePatient();
+
   const [expand, setExpand] = useState(false);
-  const dispatch = useDispatch();
+  const [diagnosisModalVisible, setDiagnosisModalVisible] = useState(false);
+  const [diagnosisContent, setDiagnosisContent] = useState({
+    text: "",
+    fileUrl: "",
+  });
 
   const {
     patientId = "",
@@ -44,12 +50,12 @@ const PatientCard = ({ patient }) => {
     caretakerName = "",
     caretakerEmail = "",
     diagnosis = "",
-    journeyEntries = [],
     DailyActivities = [],
     activity = "",
     interest = "",
     aggressionValue = "",
     aggression = "",
+    diagnosisReport,
   } = (() => {
     const bd = patient?.basicDetails ?? {};
     const cd = patient?.childDetails ?? {};
@@ -74,6 +80,11 @@ const PatientCard = ({ patient }) => {
     const activity = patient?.preferred[0]?.activities?.join(", ") ?? "--";
     const interest = patient?.preferred[0]?.interests?.join(", ") ?? "--";
 
+    const dReport = {
+      text: bd?.diagnosisReportText ?? "",
+      fileUrl: bd?.diagnosisReportFile?.fileUrl ?? "",
+    };
+
     return {
       patientId: bd._id ?? "",
       caretakerId: ct._id ?? "",
@@ -91,6 +102,7 @@ const PatientCard = ({ patient }) => {
       interest,
       aggressionValue: cd.aggressionValue ?? "",
       aggression: cd.aggression ?? "",
+      diagnosisReport: dReport,
     };
   })();
 
@@ -105,8 +117,15 @@ const PatientCard = ({ patient }) => {
       caretakerId,
     };
 
-    dispatch(setCareTaker({ patientData, patientId, caretakerId }));
-    navigate(`/patientDetails/${patientId}/${caretakerId}`);
+    setPatient(patientData);
+    navigate(`/patientDetails`);
+  };
+
+  const openDiagnosisModal = (diagnosisReport = {}) => {
+    const text = diagnosisReport?.text || "No diagnosis text available.";
+    const fileUrl = diagnosisReport?.fileUrl || "";
+    setDiagnosisContent({ text, fileUrl });
+    setDiagnosisModalVisible(true);
   };
 
   return (
@@ -146,13 +165,12 @@ const PatientCard = ({ patient }) => {
       />
 
       <Typography fontSize={14} color="success.main" fontWeight={600}>
-        {diagnosis}
+        {diagnosis || "No Diagnosis"}
       </Typography>
       <Collapse in={expand} timeout="auto" unmountOnExit>
         <Box sx={{ mt: 2 }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
-            <PolarChart size={250} values={journeyEntries} />
-
+            <PolarChart />
             <Stack spacing={0.7}>
               <Typography
                 fontSize={"1em"}
@@ -225,13 +243,19 @@ const PatientCard = ({ patient }) => {
           >
             Explore More
           </Button>
-          <Button sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+          <Button
+            sx={{ p: 0, display: "flex", flexDirection: "column", gap: 1 }}
+            onClick={() => openDiagnosisModal(diagnosisReport || {})}
+          >
             <img src="/src/assets/svg/diagnosis.svg" alt="diagnosisIcon" />
             <Typography fontSize={8}>
               Diagnosis <br /> Report
             </Typography>
           </Button>
-          <Button sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+          <Button
+            sx={{ p: 0, display: "flex", flexDirection: "column", gap: 1 }}
+            onClick={() => navigate(`/reports/?id=${caretakerId}`)}
+          >
             <img src="/src/assets/svg/progress-report.svg" alt="progressIcon" />
             <Typography fontSize={8}>
               Progress <br />
@@ -241,13 +265,81 @@ const PatientCard = ({ patient }) => {
         </Box>
       </Collapse>
 
-      <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 2, mt: 2 }}>
         <Leaderboard color="secondary" fontSize="large" />
         <Typography fontWeight={600}>{aggressionValue || "0"}%</Typography>
         <Typography fontSize={FontSize.SUB_TITLE} color="black">
           {aggression || "No Aggression"}
         </Typography>
       </Box>
+      <Modal
+        open={diagnosisModalVisible}
+        onClose={() => setDiagnosisModalVisible(false)}
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          bgcolor: "rgba(0, 0, 0, 0.07)",
+          p: 2,
+        }}
+      >
+        <Paper
+          sx={{
+            width: "100%",
+            maxWidth: 640,
+            bgcolor: "#fff",
+            borderRadius: 2,
+            p: 3,
+            boxShadow: 5,
+            outline: "none",
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+            Diagnosis Report
+          </Typography>
+
+          <Box
+            sx={{
+              maxHeight: 300,
+              overflowY: "auto",
+              mb: 2,
+            }}
+          >
+            <Typography sx={{ color: "#333", lineHeight: 1.6 }}>
+              {diagnosisContent.text || "No diagnosis text available."}
+            </Typography>
+          </Box>
+
+          <Box sx={{ display: "flex", gap: 2 }}>
+            <Button
+              variant="outlined"
+              fullWidth
+              onClick={() => setDiagnosisModalVisible(false)}
+              sx={{
+                borderColor: "#E6E6E6",
+                color: "#0B726E",
+                "&:hover": {
+                  borderColor: "#0B726E",
+                  bgcolor: "#f9f9f9",
+                },
+              }}
+            >
+              Close
+            </Button>
+            {diagnosisContent.fileUrl && (
+              <Button
+                variant="contained"
+                color="primary"
+                fullWidth
+                onClick={() => window.open(diagnosisContent.fileUrl, "_blank")}
+              >
+                Open Report File
+              </Button>
+            )}
+          </Box>
+        </Paper>
+      </Modal>
     </Card>
   );
 };

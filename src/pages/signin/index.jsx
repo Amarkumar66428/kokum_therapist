@@ -20,9 +20,11 @@ import authService from "../../services/authService";
 import { setUserData } from "../../reducer/authSlice";
 import Cookies from "js-cookie";
 import useSnackbar from "../../hooks/useSnackbar";
+import { useDispatch } from "react-redux";
 
 const SignInPage = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { showSnackbar } = useSnackbar();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -47,10 +49,17 @@ const SignInPage = () => {
         setLoading(true);
         const res = await authService?.signIn(values);
         if (res.token) {
-          setUserData(res);
-          navigate("/patientProfile");
+          const userData = {
+            id: res?.user?._id,
+            name: res?.user?.name,
+            email: res?.user?.email,
+            clinicName: res?.user?.clinicName,
+          };
+          Cookies.set("self", JSON.stringify(userData));
           Cookies.set("token", res.token);
+          dispatch(setUserData({ user: userData, token: res.token }));
           showSnackbar("Signed in successfully", "success");
+          navigate("/patientProfile");
         } else {
           setAuthError(
             res?.message || "Invalid email or password. Please try again."

@@ -7,6 +7,8 @@ import {
   PhoneAndroidOutlined,
   SpaceDashboardOutlined,
 } from "@mui/icons-material";
+import { FiSlack } from "react-icons/fi";
+import { CiDesktopMouse2 } from "react-icons/ci";
 import asyncComponent from "../utils/asyncComponent.jsx";
 
 export const authRouters = [
@@ -34,6 +36,7 @@ export const appRouters = [
     path: "/patientProfile",
     title: "Patient Profile",
     inSideMenu: true,
+    isSearch: true,
     icon: SpaceDashboardOutlined,
     component: asyncComponent(() =>
       import("../pages/patientProfile/index.jsx")
@@ -73,7 +76,11 @@ export const appRouters = [
     component: asyncComponent(() => import("../pages/appointment/index.jsx")),
   },
   {
-    path: "/allPatients-aiSuggestions",
+    path: "/appointments/schedule",
+    component: asyncComponent(() => import("../pages/appointment/scheduleAppointment.jsx")),
+  },
+  {
+    path: "/aiSuggestions/all",
     title: "Ai Suggestions",
     inSideMenu: true,
     icon: AutoAwesome,
@@ -89,10 +96,53 @@ export const appRouters = [
     component: asyncComponent(() => import("../pages/contactUs/index.jsx")),
   },
   {
-    path: "/patientDetails/:patientId/:caretakerId",
+    path: "/patientDetails",
+    isPatientView: true,
+    title: "User",
+    icon: PersonOutlineOutlined,
     component: asyncComponent(() =>
       import("../pages/patientDetails/index.jsx")
     ),
+  },
+  {
+    path: "/therapyPlans",
+    isPatientView: true,
+    title: "Therapy Plans",
+    icon: CiDesktopMouse2,
+    component: asyncComponent(() =>
+      import("../pages/manageTherapyPlan/view.jsx")
+    ),
+  },
+  {
+    path: "/therapyPlans/last",
+    isPatientView: true,
+    component: asyncComponent(() =>
+      import("../pages/manageTherapyPlan/add.jsx")
+    ),
+  },
+  {
+    path: "/therapyPlans/history",
+    isPatientView: true,
+    component: asyncComponent(() =>
+      import("../pages/manageTherapyPlan/history.jsx")
+    ),
+  },
+  {
+    path: "/suggestions",
+    isPatientView: true,
+    title: "Suggestions",
+    icon: FiSlack,
+    component: asyncComponent(() =>
+      import("../pages/aiSuggestion/ptntSuggestion.jsx")
+    ),
+  },
+  {
+    path: "/myProfile",
+    component: asyncComponent(() => import("../pages/myProfile/index.jsx")),
+  },
+  {
+    path: "/notifications",
+    component: asyncComponent(() => import("../pages/notification/index.jsx")),
   },
 ];
 

@@ -1,0 +1,185 @@
+// Variables
+$bg-white: #fff;
+$bg-surface: #f9fafb;
+$text-muted: #6b7280;
+$text-secondary: #0c597f;
+$label: #c4c4c6;
+$line: #e5e7eb;
+$rail: #d1d5db;
+$shadow: #00000033;
+$shadow-card: #000000af;
+$danger: #ef4444;
+
+$radius-lg: 15px;
+$radius-md: 8px;
+$elevation: 2;
+$font-size: 12px;
+
+.timeline-root {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.timeline-wrapper {
+  padding: 10px;
+  border-radius: $radius-lg;
+  margin-bottom: 12px;
+  background: $bg-white;
+  position: relative;
+}
+
+.timeline-scroll {
+  background: $bg-white;
+  overflow: auto;
+  scroll-behavior: smooth;
+
+  // Improve scrolling performance
+  will-change: scroll-position;
+}
+
+.timeline-scroll-content {
+  position: relative;
+}
+
+.hour-row {
+  position: absolute;
+  left: 0;
+  right: 0;
+  min-height: 16px;
+  display: flex;
+  align-items: center;
+  z-index: 2;
+}
+
+.hour-label-box {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.hour-label {
+  font-size: $font-size;
+  color: $label;
+  font-weight: 500;
+}
+
+.hour-line {
+  flex: 1;
+  height: 1px;
+  background: $line;
+}
+
+.vertical-rail {
+  position: absolute;
+  top: 0;
+  width: 2px;
+  background: $rail;
+  z-index: 1;
+}
+
+.events-layer {
+  position: relative;
+  padding-left: 10px;
+  height: 100%;
+}
+
+.event-block {
+  position: absolute;
+  border-radius: $radius-md;
+  border-left-width: 3px;
+  border-left-style: solid;
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  padding: 6px 8px;
+  background: $bg-surface;
+  box-shadow: 0 1px 3px $shadow;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+
+  // Avoid heavy effects during scrolling
+  will-change: transform, height, top, left, width;
+}
+
+.event-title {
+  font-size: $font-size;
+  font-weight: 600;
+  color: $text-secondary;
+  margin-top: 1px;
+  line-height: 14px;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.event-time {
+  font-size: $font-size;
+  color: $text-muted;
+  font-weight: 400;
+  line-height: 12px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.now-row {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
+
+.now-pill {
+  background: $danger;
+  border-radius: 4px;
+  padding: 2px 6px;
+  margin-right: 2px;
+}
+
+.now-text {
+  font-size: $font-size;
+  color: #fff;
+  font-weight: 700;
+}
+
+.now-line {
+  flex: 1;
+  height: 2px;
+  background: $danger;
+}
+
+.now-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+  background: $danger;
+  margin-left: -4px;
+}
+
+.legend {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+}
+
+.legend-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 72px;
+}
+
+.legend-bar {
+  height: 2px;
+  border-radius: 10px;
+}
+
+.legend-text {
+  font-size: $font-size;
+}

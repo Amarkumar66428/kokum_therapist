@@ -8,7 +8,6 @@ import {
   Slider,
   Stack,
   Button,
-  Divider,
   Chip,
 } from "@mui/material";
 import { useFormik } from "formik";

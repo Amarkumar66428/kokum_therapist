@@ -6,7 +6,7 @@ import SideBar from "./sidebar";
 const DRAWER_WIDTH = 240;
 const MINI_DRAWER_WIDTH = 60;
 
-const AppLayout = ({ children }) => {
+const AppLayout = ({ isSearch, isPatientView, children }) => {
   const [open, setOpen] = useState(true);
 
   const toggleDrawer = () => {
@@ -20,7 +20,12 @@ const AppLayout = ({ children }) => {
         bgcolor: "#fff",
       }}
     >
-      <Header open={open} toggleDrawer={toggleDrawer} />
+      <Header
+        drawerWidth={DRAWER_WIDTH}
+        isSearch={isSearch}
+        isPatientView={isPatientView}
+        toggleDrawer={toggleDrawer}
+      />
       <SideBar
         open={open}
         drawerWidth={DRAWER_WIDTH}

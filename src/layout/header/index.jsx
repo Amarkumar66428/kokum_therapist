@@ -1,4 +1,3 @@
-import React, { useState } from "react";
 import {
   AppBar,
   Toolbar,
@@ -10,19 +9,24 @@ import {
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import SearchIcon from "@mui/icons-material/Search";
-import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
-import { styled } from "@mui/material/styles";
+import { styled, useTheme } from "@mui/material/styles";
+import { IoAdd } from "react-icons/io5";
+import { IoPerson } from "react-icons/io5";
+import { FaBell } from "react-icons/fa";
+import { useDispatch } from "react-redux";
+import { searchPatient } from "../../reducer/patientSlice";
+import { useNavigate } from "react-router-dom";
+import useAuth from "../../hooks/useAuth";
+import PatientHeaderTabs from "../../components/patientHeaderTabs";
 
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
-  borderRadius: theme.shape.borderRadius,
+  borderRadius: 16,
   backgroundColor: alpha(theme.palette.grey[200], 0.7),
   "&:hover": {
     backgroundColor: alpha(theme.palette.grey[300], 0.9),
   },
-  marginLeft: theme.spacing(2),
-  transition: "width 0.3s",
-  width: "200px",
+  width: "400px",
 }));
 
 const SearchIconWrapper = styled("div")(({ theme }) => ({
@@ -43,55 +47,99 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
-const Header = ({ toggleDrawer }) => {
-  const [showSearch, setShowSearch] = useState(false);
+const Header = ({ drawerWidth, isSearch, isPatientView, toggleDrawer }) => {
+  const theme = useTheme();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const onChangeSearch = (value) => {
+    dispatch(searchPatient({ value }));
+  };
+
+  const userData = useAuth();
 
   return (
     <AppBar
       position="fixed"
       color="#fff"
       elevation={0}
-      sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, background: "#fff" }}
+      sx={{
+        zIndex: (theme) => theme.zIndex.drawer + 1,
+        background: "#fff",
+        paddingX: 1,
+      }}
     >
       <Toolbar>
-        <IconButton
-          size="large"
-          edge="start"
-          onClick={toggleDrawer}
-          sx={{ mr: 2 }}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            width: `calc(${drawerWidth}px - 16px)`,
+          }}
         >
-          <MenuIcon />
-        </IconButton>
+          <IconButton size="large" edge="start" onClick={toggleDrawer}>
+            <MenuIcon />
+          </IconButton>
+          <Box>
+            <Typography variant="body1" sx={{ fontWeight: 600 }}>
+              {userData?.name ? `Hi, ${userData?.name}` : "Kokum Therapist"}
+            </Typography>
+            {userData?.clinicName && (
+              <Typography variant="body2" sx={{ fontWeight: 400 }}>
+                {userData?.clinicName}
+              </Typography>
+            )}
+          </Box>
+        </Box>
 
-        <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 600 }}>
-          MyApp
-        </Typography>
-
-        {showSearch && (
-          <Search>
-            <SearchIconWrapper>
-              <SearchIcon />
-            </SearchIconWrapper>
-            <StyledInputBase
-              placeholder="Search…"
-              inputProps={{ "aria-label": "search" }}
-              autoFocus
-            />
-          </Search>
+        {isSearch && (
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <Search>
+              <SearchIconWrapper>
+                <SearchIcon />
+              </SearchIconWrapper>
+              <StyledInputBase
+                placeholder="Search…"
+                inputProps={{ "aria-label": "search" }}
+                autoFocus
+                onChange={(e) => onChangeSearch(e.target.value)}
+              />
+            </Search>
+            <IconButton
+              color="default"
+              sx={{
+                ml: 1,
+                border: `1px solid ${theme.palette.primary.main}`,
+              }}
+              onClick={() => navigate("/managePatient/basicDetails")}
+            >
+              <IoAdd color={theme.palette.primary.main} />
+            </IconButton>
+          </Box>
         )}
 
-        <IconButton
-          size="large"
-          onClick={() => setShowSearch((prev) => !prev)}
-          color={showSearch ? "primary" : "default"}
-          sx={{ ml: 1 }}
-        >
-          <SearchIcon />
-        </IconButton>
-
-        <IconButton size="large" color="default" sx={{ ml: 1 }}>
-          <AddCircleOutlineIcon />
-        </IconButton>
+        {isPatientView && <PatientHeaderTabs />}
+        <Box sx={{ display: "flex", alignItems: "center", ml: "auto", gap: 2 }}>
+          <IconButton
+            color="default"
+            sx={{ ml: 1, border: `1px solid ${theme.palette.primary.main}` }}
+            onClick={() => navigate("/notifications")}
+          >
+            <FaBell color={theme.palette.primary.main} />
+          </IconButton>
+          <IconButton
+            color="default"
+            sx={{ ml: 1, border: `1px solid ${theme.palette.primary.main}` }}
+            onClick={() => navigate("/myProfile")}
+          >
+            <IoPerson color={theme.palette.primary.main} />
+          </IconButton>
+        </Box>
       </Toolbar>
     </AppBar>
   );

@@ -1,9 +1,12 @@
 import { useMemo } from "react";
 import { useSelector } from "react-redux";
 import { getCurrentUser } from "../reducer/authSlice";
+import Cookies from "js-cookie";
 
 const useAuth = () => {
-  const user = useSelector(getCurrentUser);
+  let user = useSelector(getCurrentUser);
+
+  user = user ?? JSON.parse(Cookies.get("self"));
 
   return useMemo(() => user, [user]);
 };

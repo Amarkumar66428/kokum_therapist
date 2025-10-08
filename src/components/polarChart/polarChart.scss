@@ -1,0 +1,11 @@
+.polar-chart-container {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  background: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+  min-height: 400px; // Optional, ensures a minimum height
+}

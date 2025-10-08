@@ -1,12 +1,11 @@
 import React from "react";
-import { Box, Typography, Paper } from "@mui/material";
+import { Box, Typography, Paper, Card } from "@mui/material";
 
 const ChildDetailCard = ({ childData }) => {
   return (
-    <Paper
-      elevation={3}
+    <Card
       sx={{
-        borderRadius: 3,
+        borderRadius: "12px",
         overflow: "hidden",
         background: "linear-gradient(to right, #EBFCFD, #EFF6FF)",
       }}
@@ -34,7 +33,7 @@ const ChildDetailCard = ({ childData }) => {
           </Typography>
         </Box>
       </Box>
-    </Paper>
+    </Card>
   );
 };
 

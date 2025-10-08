@@ -4,7 +4,7 @@ import { store } from "../app/store";
 import { setServerError } from "../reducer/serverSlice";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
+  baseURL: `${import.meta.env.VITE_API_BASE_URL}/api/v1`,
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",

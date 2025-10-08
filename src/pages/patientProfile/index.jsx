@@ -1,21 +1,22 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Box, Chip, Stack, Grid } from "@mui/material";
 import PatientCard from "../../components/patientCards";
 import patientService from "../../services/patientService";
 import SkeletonBlock from "../../components/skeleton";
+import { useSelector } from "react-redux";
 
 const bubbleFilters = ["Autism", "Cerebral Palsy", "ADHD", "Dyslexia"];
 
 const PatientProfile = () => {
-  const [search, setSearch] = useState("");
+  const debounceRef = useRef(null);
+  const searchedPatient = useSelector((state) => state?.patient?.searchPatient);
   const [patientList, setPatientList] = useState([]);
-  const [filteredPatientList, setFilteredPatientList] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const fetchPatientList = async () => {
     try {
       setLoading(true);
-      const response = await patientService.getAllPatients();
+      const response = await patientService.getAllPatients(searchedPatient);
       if (response?.success) {
         setPatientList(response?.data);
       }
@@ -27,8 +28,14 @@ const PatientProfile = () => {
   };
 
   useEffect(() => {
-    fetchPatientList();
-  }, []);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    debounceRef.current = setTimeout(() => {
+      fetchPatientList(searchedPatient);
+    }, 500);
+
+    return () => clearTimeout(debounceRef.current);
+  }, [searchedPatient]);
 
   return (
     <Box sx={{ p: 2 }}>

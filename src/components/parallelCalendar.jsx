@@ -33,7 +33,6 @@ const generateCalendarDays = () => {
 };
 
 const ParallelCalendar = ({ selectedDate, setSelectedDate }) => {
-  console.log("selectedDate: ", selectedDate);
   const data = useMemo(() => generateCalendarDays(), []);
   const scrollRef = useRef(null);
 

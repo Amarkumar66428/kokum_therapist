@@ -16,24 +16,35 @@ const AppRouter = () => {
           element={React.createElement(component)}
         />
       ))}
-      {appRouters.map(({ path, component, isLayout = true, role }) => {
-        const content = React.createElement(component);
-        const wrappedContent = isLayout ? (
-          <AppLayout>{content}</AppLayout>
-        ) : (
-          content
-        );
+      {appRouters.map(
+        ({
+          path,
+          component,
+          isLayout = true,
+          role,
+          isSearch = false,
+          isPatientView = false,
+        }) => {
+          const content = React.createElement(component);
+          const wrappedContent = isLayout ? (
+            <AppLayout isSearch={isSearch} isPatientView={isPatientView}>
+              {content}
+            </AppLayout>
+          ) : (
+            content
+          );
 
-        return (
-          <Route
-            key={path}
-            path={path}
-            element={
-              <ProtectedRoute role={role}>{wrappedContent}</ProtectedRoute>
-            }
-          />
-        );
-      })}
+          return (
+            <Route
+              key={path}
+              path={path}
+              element={
+                <ProtectedRoute role={role}>{wrappedContent}</ProtectedRoute>
+              }
+            />
+          );
+        }
+      )}
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
