@@ -8,6 +8,7 @@ const MINI_DRAWER_WIDTH = 60;
 
 const AppLayout = ({
   inSideMenu,
+  showSideMenu,
   isSearch,
   isPatientView,
   children,
@@ -29,12 +30,13 @@ const AppLayout = ({
       <Header
         title={title}
         inSideMenu={inSideMenu}
+        showSideMenu={showSideMenu}
         drawerWidth={DRAWER_WIDTH}
         isSearch={isSearch}
         isPatientView={isPatientView}
         toggleDrawer={toggleDrawer}
       />
-      {inSideMenu && (
+      {(inSideMenu || showSideMenu) && (
         <SideBar
           open={open}
           drawerWidth={DRAWER_WIDTH}

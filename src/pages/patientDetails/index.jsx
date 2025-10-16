@@ -2,11 +2,10 @@ import React, { useEffect, useState } from "react";
 import {
   alpha,
   Box,
-  CircularProgress,
+  Card,
   Container,
   Grid,
-  Skeleton,
-  Typography,
+  Stack,
   useTheme,
 } from "@mui/material";
 import ParallelCalendar from "../../components/parallelCalendar";
@@ -20,8 +19,14 @@ import { useNavigate } from "react-router-dom";
 import SkeletonBlock from "../../components/skeleton";
 import SemiBoldText from "../../components/typography/semiBoldText";
 import RegularText from "../../components/typography/regularText";
-import { AppColors } from "../../constant/appColors";
+import { AppColors, ChartColors } from "../../constant/appColors";
 import { formatTo12Hour } from "../../utils/helper";
+import DailyActivities from "../../components/activityCard";
+import {
+  BORDER_RADIUS,
+  ELEVATION,
+  SPACING,
+} from "../../constant/lookUpConstant";
 
 const formatDDMMYY = (iso) => {
   if (!iso) return null;
@@ -218,7 +223,6 @@ const PatientDetails = () => {
   return (
     <Container maxWidth="lg">
       <Grid container spacing={3}>
-        {/* LEFT COLUMN */}
         <Grid size={{ xs: 12, md: 4 }}>
           <ChildDetailCard
             childData={{
@@ -256,15 +260,24 @@ const PatientDetails = () => {
           />
         </Grid>
         <Grid size={{ xs: 12, md: 4 }}>
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+          <SemiBoldText
+            sx={{
+              mb: SPACING.XXS,
+            }}
+          >
+            Journey Overview
+          </SemiBoldText>
+          <Card
+            elevation={ELEVATION.LOW}
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 2,
+              p: 2,
+              borderRadius: BORDER_RADIUS.SM,
+            }}
+          >
             <Box>
-              <SemiBoldText
-                sx={{
-                  mb: 2,
-                }}
-              >
-                Journey Overview
-              </SemiBoldText>
               {loading ? (
                 <SkeletonBlock
                   variant="rectangular"
@@ -276,15 +289,82 @@ const PatientDetails = () => {
                 <BarChart realChartData={barChartData} />
               )}
             </Box>
-          </Box>
+            <Box
+              display="flex"
+              flexWrap="wrap"
+              justifyContent="flex-start"
+              gap={1.5}
+              mt={2.5}
+              px={0.5}
+            >
+              {[
+                "Poor Eye Contact",
+                "Abnormal Flat Speech",
+                "Anxiety",
+                "Aggression",
+                "Noise Sensitivity",
+                "Fixations",
+                "Social Difficulty",
+                "Depression",
+                "Tics and Fidgets",
+                "Abnormal Postures",
+              ].map((item, i) => (
+                <Stack
+                  key={i}
+                  direction="row"
+                  alignItems="center"
+                  spacing={0.75}
+                  sx={{ mr: 1.5, mb: 1 }}
+                >
+                  <Box
+                    sx={{
+                      width: 10,
+                      height: 10,
+                      borderRadius: "50%",
+                      backgroundColor: ChartColors[i % ChartColors.length],
+                    }}
+                  />
+                  <RegularText>{item}</RegularText>
+                </Stack>
+              ))}
+            </Box>
+          </Card>
 
+          <Box sx={{ mt: SPACING.XXS }}>
+            <SemiBoldText
+              sx={{
+                mb: SPACING.XXS,
+              }}
+            >
+              Daily Activity
+            </SemiBoldText>
+            <DailyActivities dailyActivities={dailyActivities} />
+          </Box>
+        </Grid>
+
+        {/* RIGHT COLUMN */}
+        <Grid size={{ xs: 12, md: 8 }}>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+            <Box>
+              <SemiBoldText
+                sx={{
+                  mb: SPACING.XXS,
+                }}
+              >
+                Routine & Activity
+              </SemiBoldText>
+              <TimelineCalendar events={handleTimeLineData() ?? []} />
+            </Box>
+          </Box>
           <Box
-            sx={{ cursor: "pointer" }}
+            sx={{ cursor: "pointer", mt: SPACING.XXS }}
             onClick={() =>
               navigate(`/appointments/schedule/?id=${caretakerId}`)
             }
           >
-            <Box sx={{ display: "flex", alignItems: "center" }}>
+            <Box
+              sx={{ display: "flex", alignItems: "center", mb: SPACING.XXS }}
+            >
               <SemiBoldText>Next Appointment</SemiBoldText>
               <IoIosArrowRoundForward size={22} style={{ marginLeft: 4 }} />
             </Box>
@@ -298,16 +378,6 @@ const PatientDetails = () => {
             ) : (
               <RegularText>No upcoming appointment.</RegularText>
             )}
-          </Box>
-        </Grid>
-
-        {/* RIGHT COLUMN */}
-        <Grid size={{ xs: 12, md: 8 }}>
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-            <Box>
-              <SemiBoldText>Routine & Activity</SemiBoldText>
-              <TimelineCalendar events={handleTimeLineData() ?? []} />
-            </Box>
           </Box>
         </Grid>
       </Grid>

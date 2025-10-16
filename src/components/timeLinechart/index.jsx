@@ -3,6 +3,7 @@ import "./timeline-calendar.scss";
 import { Card } from "@mui/material";
 import RegularText from "../typography/regularText";
 import { AppColors } from "../../constant/appColors";
+import { BORDER_RADIUS, ELEVATION } from "../../constant/lookUpConstant";
 
 function TimelineCalendar({
   events = [],
@@ -144,7 +145,13 @@ function TimelineCalendar({
 
   return (
     <div className="timeline-root">
-      <Card className="timeline-wrapper">
+      <Card
+        elevation={ELEVATION.LOW}
+        sx={{
+          borderRadius: BORDER_RADIUS.SM,
+        }}
+        className="timeline-wrapper"
+      >
         <div
           className="timeline-scroll"
           ref={scrollRef}

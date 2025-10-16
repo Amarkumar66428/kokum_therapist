@@ -18,6 +18,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useLocation, useNavigate } from "react-router-dom";
 import api from "../../utils/axios";
+import RoundedButton from "../../components/button/roundedButton";
 
 const SENSE_FIELDS = [
   "Hearing",
@@ -323,25 +324,13 @@ function SensesProfile() {
                 justifyContent="flex-end"
                 sx={{ mt: 1 }}
               >
-                <Button
+                <RoundedButton
                   type="submit"
-                  variant="outlined"
                   size="large"
-                  disabled={submitting || prefilling}
-                  sx={{
-                    py: 1,
-                    px: 8,
-                    borderRadius: 10,
-                    boxShadow: 1,
-                    textTransform: "none",
-                    color: "primary.success",
-                    borderColor: "primary.success",
-                    fontWeight: 500,
-                    fontSize: "1em",
-                  }}
+                  sx={{ width: "fit-content", px: 10 }}
                 >
                   {submitting ? "Submitting..." : "Submit"}
-                </Button>
+                </RoundedButton>
               </Stack>
             </Grid>
           </Grid>

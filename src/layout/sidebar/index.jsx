@@ -49,15 +49,15 @@ const SideBar = ({ open, drawerWidth, miniDrawerWidth }) => {
       <Box sx={{ flexGrow: 1 }}>
         <List>
           {appRouters
-            ?.filter(({ inSideMenu }) => inSideMenu)
-            .map(({ path, title, icon: Icon }) => {
+            ?.filter(({ inSideMenu, menuTitle }) => inSideMenu || menuTitle)
+            .map(({ path, menuTitle, icon: Icon }) => {
               const RenderIcon = Icon || PersonOutlineOutlined;
               const isActive = location.pathname.startsWith(path);
 
               return (
                 <Tooltip
-                  key={title}
-                  title={!open ? title : ""}
+                  key={menuTitle}
+                  title={!open ? menuTitle : ""}
                   placement="right"
                 >
                   <ListItemButton
@@ -84,7 +84,7 @@ const SideBar = ({ open, drawerWidth, miniDrawerWidth }) => {
                     {open && (
                       <ListItemText
                         disableTypography
-                        primary={<SemiBoldText>{title}</SemiBoldText>}
+                        primary={<SemiBoldText>{menuTitle}</SemiBoldText>}
                       />
                     )}
                   </ListItemButton>

@@ -1,6 +1,7 @@
 // Chart.jsx
 import React, { useRef, useEffect, useState } from "react";
 import "./Chart.scss";
+import { ChartColors } from "../../constant/appColors";
 
 const BarChart = ({
   selectedFilter = "All",
@@ -12,23 +13,8 @@ const BarChart = ({
   const totalHeight = 200;
   const labelFontSize = 12;
 
-  // Generate dynamic category colors
-  const categoryColors = [
-    "#667da6",
-    "#ef8548",
-    "#e6b7b8",
-    "#5D6BC3",
-    "#cfb6e8",
-    "#edb578",
-    "#8de4ff",
-    "#b1d59d",
-    "#3883f5",
-    "#ef8548",
-  ];
-  // Dummy category labels (if filters used)
   const categoryLabels = Array.from({ length: 10 }, (_, i) => `Metric${i + 1}`);
 
-  // Resize listener for responsiveness
   useEffect(() => {
     const handleResize = () => {
       if (containerRef.current) {
@@ -120,7 +106,7 @@ const BarChart = ({
                 const filterIndex = categoryLabels.indexOf(selectedFilter);
                 if (filterIndex !== -1) {
                   displayValue = bar.values[filterIndex] || 0;
-                  displayColor = categoryColors[filterIndex];
+                  displayColor = ChartColors[filterIndex];
                 }
               } else {
                 displayValue = currentDaySum;
@@ -156,7 +142,7 @@ const BarChart = ({
                                 y={totalHeight - segmentHeight - yOffset}
                                 width={barWidth - 4}
                                 height={segmentHeight}
-                                fill={categoryColors[j % categoryColors.length]}
+                                fill={ChartColors[j % ChartColors.length]}
                                 rx={0}
                                 ry={0}
                                 onClick={() => onBarPress?.(bar.date)}

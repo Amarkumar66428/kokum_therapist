@@ -23,6 +23,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useLocation, useNavigate } from "react-router-dom";
 import therapistService from "../../services/therapistService";
+import RoundedButton from "../../components/button/roundedButton";
 
 const GENDER_OPTIONS = ["Male", "Female", "Other"];
 const RELATION_OPTIONS = [
@@ -148,7 +149,7 @@ function ChildDetails({ onNext }) {
         };
 
         const resr = await therapistService.createChildDetails(payload);
-        console.log('resr: ', resr);
+        console.log("resr: ", resr);
         setToast({
           open: true,
           msg: isEdit ? "Child details updated." : "Child details saved.",
@@ -462,7 +463,7 @@ function ChildDetails({ onNext }) {
                     <Chip
                       key={s}
                       label={s}
-                      color="secondary"
+                      color="secondary.error"
                       variant={active ? "filled" : "outlined"}
                       onClick={() =>
                         setFieldValue(
@@ -505,7 +506,7 @@ function ChildDetails({ onNext }) {
                     <Chip
                       key={s}
                       label={s}
-                      color="primary"
+                      color="primary.label"
                       variant={active ? "filled" : "outlined"}
                       onClick={() =>
                         setFieldValue(
@@ -587,24 +588,13 @@ function ChildDetails({ onNext }) {
                 justifyContent="flex-end"
                 sx={{ mt: 1 }}
               >
-                <Button
+                <RoundedButton
                   type="submit"
-                  variant="outlined"
                   size="large"
-                  sx={{
-                    py: 1,
-                    px: 8,
-                    borderRadius: 10,
-                    boxShadow: 1,
-                    textTransform: "none",
-                    color: "primary.success",
-                    borderColor: "primary.success",
-                    fontWeight: 500,
-                    fontSize: "1em",
-                  }}
+                  sx={{ width: "fit-content", px: 10 }}
                 >
                   Save & Next
-                </Button>
+                </RoundedButton>
               </Stack>
             </Grid>
           </Grid>

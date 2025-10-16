@@ -57,6 +57,7 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 const Header = ({
   title,
   inSideMenu,
+  showSideMenu,
   drawerWidth,
   isSearch,
   isPatientView,
@@ -106,7 +107,7 @@ const Header = ({
               width: `calc(${drawerWidth}px - 16px)`,
             }}
           >
-            {inSideMenu ? (
+            {inSideMenu || showSideMenu ? (
               <RoundedIconButton
                 sx={{
                   mr: 1,
@@ -132,7 +133,7 @@ const Header = ({
               </RoundedIconButton>
             )}
             <Box>
-              {!inSideMenu && title ? (
+              {(!inSideMenu || !showSideMenu) && title ? (
                 <SemiBoldText>{title}</SemiBoldText>
               ) : (
                 <>

@@ -41,17 +41,17 @@ import ChildDetailCard from "../../components/childDetailCard";
 import renderFormattedText from "../../components/aiResponse";
 import { FilterAltOutlined } from "@mui/icons-material";
 import SuggestionDetails from "../../components/suggestionDetails";
+import RegularText from "../../components/typography/regularText";
+import { FONT_SIZE } from "../../constant/lookUpConstant";
+import SemiBoldText from "../../components/typography/semiBoldText";
 
 const capitalize = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : "");
-const formatToDateAndTime = (d) =>
-  d ? dayjs(d).format("MMM D, YYYY • h:mm A") : "N/A";
 
 export default function AISuggestionsListPage() {
   const { patient } = usePatient();
 
   const caretakerId = patient?.caretakerId;
 
-  const [showFeedBack, setShowFeedBack] = useState(null);
   const [commentDrafts, setCommentDrafts] = useState({});
   const [activeTab, setActiveTab] = useState("daily");
   const [selectedDate, setSelectedDate] = useState(dayjs());
@@ -172,9 +172,6 @@ export default function AISuggestionsListPage() {
     setFilterAnchor(null);
   };
 
-  const toggleComment = (id) =>
-    setShowFeedBack((prev) => (prev === id ? null : id));
-
   const addFeedback = async (suggestionId) => {
     setSuggestions((prev) =>
       prev.map((item) =>
@@ -183,7 +180,6 @@ export default function AISuggestionsListPage() {
           : item
       )
     );
-    setShowFeedBack(suggestionId);
     try {
       await suggestionService.addFeedback(
         suggestionId,
@@ -220,352 +216,335 @@ export default function AISuggestionsListPage() {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <Container maxWidth="sm" sx={{ py: 2.5 }}>
-        <ChildDetailCard
-          childData={{
-            name: patient?.patientName,
-            age: patient?.patientAge,
-            gender: patient?.patientGender,
-            caretakerName: patient?.caretakerName,
-          }}
-        />
-      </Container>
-
-      <Box sx={{ pb: 1 }}>
-        <Stack
-          direction="row"
-          alignItems="center"
-          justifyContent="space-between"
-          sx={{ px: 2, borderBottom: "1px solid #e0e0e0" }}
-        >
-          <Tabs
-            value={activeTab}
-            onChange={handleTabChange}
-            variant="scrollable"
-            sx={{
-              "& .MuiTab-root": {
-                textTransform: "none",
-                fontSize: 16,
-                color: "#7d7d7e",
-              },
-              "& .Mui-selected": {
-                color: "#0A0A0A",
-              },
-            }}
-          >
-            <Tab value="daily" label="Daily Suggestions" />
-            <Tab value="specific" label="Specific Suggestions" />
-          </Tabs>
-
-          <Stack direction="row" alignItems="center" spacing={2}>
-            <DatePicker
-              value={selectedDate}
-              onChange={(v) => v && handleSelectDate(v)}
-              format="D MM, YYYY"
-              sx={{
-                fontSize: 12,
-                "& .MuiPickersInputBase-sectionsContainer": {
-                  padding: 1.5,
-                },
+      <Container maxWidth="lg">
+        <AppBar position="static" color="transparent" elevation={0}>
+          <Box sx={{ width: "50%", mx: "auto" }}>
+            <ChildDetailCard
+              childData={{
+                name: patient?.patientName,
+                age: patient?.patientAge,
+                gender: patient?.patientGender,
+                caretakerName: patient?.caretakerName,
               }}
             />
+          </Box>
+        </AppBar>
 
-            <IconButton
-              onClick={handleFilterClick}
-              sx={{ position: "relative" }}
+        <Box sx={{ mt: 1 }}>
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+            sx={{ px: 2, borderBottom: "1px solid #e0e0e0" }}
+          >
+            <Tabs
+              value={activeTab}
+              onChange={handleTabChange}
+              variant="scrollable"
+              scrollButtons="auto"
+              sx={{
+                borderBottom: "1px solid #e0e0e0",
+                "& .MuiTab-root": {
+                  textTransform: "none",
+                  fontFamily: "regular",
+                },
+                "& .Mui-selected": { fontFamily: "semibold" },
+              }}
             >
-              <FilterAltOutlined sx={{ color: "#ff5a82" }} />
-              {filter && (
+              <Tab value="daily" label="Daily Suggestions" />
+              <Tab value="specific" label="Specific Suggestions" />
+            </Tabs>
+
+            <Stack direction="row" alignItems="center" spacing={2}>
+              <DatePicker
+                value={selectedDate}
+                onChange={(v) => v && handleSelectDate(v)}
+                format="D MM, YYYY"
+                sx={{
+                  fontSize: 12,
+                  "& .MuiPickersInputBase-sectionsContainer": {
+                    padding: 1.5,
+                  },
+                }}
+              />
+
+              <IconButton
+                onClick={handleFilterClick}
+                sx={{ position: "relative", color: "primary.icon" }}
+              >
+                <FilterAltOutlined />
+                {filter && (
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      top: -3,
+                      right: -3,
+                      width: 8,
+                      height: 8,
+                      borderRadius: "50%",
+                      bgcolor: "red",
+                    }}
+                  />
+                )}
+              </IconButton>
+
+              <Popover
+                open={Boolean(filterAnchor)}
+                anchorEl={filterAnchor}
+                onClose={handleFilterClose}
+                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                transformOrigin={{ vertical: "top", horizontal: "right" }}
+                PaperProps={{ sx: { width: 200, borderRadius: 2 } }}
+              >
                 <Box
                   sx={{
-                    position: "absolute",
-                    top: -3,
-                    right: -3,
-                    width: 8,
-                    height: 8,
-                    borderRadius: "50%",
-                    bgcolor: "red",
+                    px: 2,
+                    py: 1,
+                    borderBottom: "1px solid #ccc",
+                    display: "flex",
+                    justifyContent: "space-between",
                   }}
-                />
-              )}
-            </IconButton>
-
-            <Popover
-              open={Boolean(filterAnchor)}
-              anchorEl={filterAnchor}
-              onClose={handleFilterClose}
-              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-              transformOrigin={{ vertical: "top", horizontal: "right" }}
-              PaperProps={{ sx: { width: 200, borderRadius: 2 } }}
-            >
-              <Box
-                sx={{
-                  px: 2,
-                  py: 1,
-                  borderBottom: "1px solid #ccc",
-                  display: "flex",
-                  justifyContent: "space-between",
-                }}
-              >
-                <Typography
-                  sx={{ fontSize: 14, fontWeight: 600, color: "#333", my: 1 }}
                 >
-                  Filter
-                </Typography>
-                <Button
-                  size="small"
-                  color="error"
-                  onClick={() => {
-                    if (filter) handleSelectFilter("");
-                    else handleFilterClose();
-                  }}
-                  sx={{ textTransform: "none" }}
-                >
-                  {filter ? "Clear" : "Close"}
-                </Button>
-              </Box>
-              <Stack sx={{ py: 0.5 }}>
-                {[
-                  { id: "approved", name: "Approved" },
-                  { id: "unapproved", name: "Unapproved" },
-                ].map((it) => (
+                  <SemiBoldText>Filter</SemiBoldText>
                   <Button
-                    key={it.id}
-                    onClick={() => handleSelectFilter(it.id)}
-                    sx={{
-                      justifyContent: "flex-start",
-                      borderRadius: 0,
-                      textTransform: "none",
-                      bgcolor: filter === it.id ? "#c9c9c9" : "transparent",
-                      color: "#333",
-                      "&:hover": { bgcolor: "#e9e9e9" },
-                      px: 2,
+                    size="small"
+                    color="error"
+                    onClick={() => {
+                      if (filter) handleSelectFilter("");
+                      else handleFilterClose();
                     }}
+                    sx={{ textTransform: "none" }}
                   >
-                    {it.name}
+                    {filter ? "Clear" : "Close"}
                   </Button>
-                ))}
-              </Stack>
-            </Popover>
-          </Stack>
-        </Stack>
-      </Box>
-
-      {/* List */}
-      <Container maxWidth="md" sx={{ px: 2, pb: 20 }}>
-        {loading ? (
-          <Stack alignItems="center" sx={{ py: 4 }}>
-            <CircularProgress color="primary" />
-            <Typography sx={{ mt: 1, color: "#022E8A", fontSize: 16 }}>
-              Loading suggestions...
-            </Typography>
-          </Stack>
-        ) : suggestions.length === 0 ? (
-          <Box sx={{ textAlign: "center", py: 6 }}>
-            <Typography sx={{ fontWeight: 700, color: "#0A0A0A", mb: 0.5 }}>
-              No suggestions found
-            </Typography>
-            <Typography sx={{ color: "#667085" }}>
-              Try switching tabs or check back later
-            </Typography>
-          </Box>
-        ) : (
-          suggestions.map((item) => {
-            const feedbackOpen = showFeedBack === item._id;
-            const isPending = item.status === "pending";
-            const isApproveLoading =
-              statusLoading.id === item._id &&
-              statusLoading.type === "approved" &&
-              statusLoading.loading;
-            const isRejectLoading =
-              statusLoading.id === item._id &&
-              statusLoading.type === "rejected" &&
-              statusLoading.loading;
-
-            return (
-              <Box key={item._id}>
-                <Card
-                  variant="outlined"
-                  sx={{
-                    borderRadius: 2,
-                    p: 1.25,
-                    mt: 1.5,
-                    borderColor: "#fff",
-                    boxShadow: "0px 2px 8px rgba(0,0,0,0.08)",
-                  }}
-                >
-                  <CardContent sx={{ p: 0 }}>
-                    {item?.requestMessage?.content && (
-                      <Box
-                        sx={{
-                          borderColor: "#022E8A",
-                          borderWidth: 1,
-                          borderStyle: "solid",
-                          p: 1.25,
-                          borderRadius: 1.25,
-                          bgcolor: "#E6ECF8",
-                          mb: 1,
-                        }}
-                      >
-                        <Typography
-                          sx={{
-                            fontSize: 12,
-                            color: "#022E8A",
-                            fontWeight: 700,
-                            mb: 0.5,
-                          }}
-                        >
-                          Users Request
-                        </Typography>
-                        <Box>
-                          {renderFormattedText(item?.requestMessage?.content)}
-                        </Box>
-                      </Box>
-                    )}
-
-                    <Box>{renderFormattedText(item.content)}</Box>
-
-                    <Stack
-                      direction="row"
-                      alignItems="center"
-                      justifyContent="space-between"
-                      sx={{ mt: 1 }}
-                    >
-                      <Typography
-                        sx={{
-                          color: "#ff5a82",
-                          fontSize: 12,
-                          fontWeight: 700,
-                        }}
-                      >
-                        This suggestion is purely based out of AI
-                      </Typography>
-
-                      <Stack direction="row" spacing={1}>
-                        <IconButton
-                          size="small"
-                          onClick={() => toggleComment(item._id)}
-                        >
-                          <ChatBubbleOutlineIcon
-                            fontSize="small"
-                            sx={{ color: "#022E8A" }}
-                          />
-                        </IconButton>
-                        <IconButton
-                          size="small"
-                          onClick={() =>
-                            setSuggestionDetails({ data: item, open: true })
-                          }
-                        >
-                          <InfoOutlinedIcon
-                            fontSize="small"
-                            sx={{ color: "#ff5a82" }}
-                          />
-                        </IconButton>
-                      </Stack>
-                    </Stack>
-
-                    <Box
+                </Box>
+                <Stack sx={{ py: 0.5 }}>
+                  {[
+                    { id: "approved", name: "Approved" },
+                    { id: "unapproved", name: "Unapproved" },
+                  ].map((it) => (
+                    <Button
+                      key={it.id}
+                      onClick={() => handleSelectFilter(it.id)}
                       sx={{
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        mt: 1.5,
+                        fontSize: FONT_SIZE.BODY,
+                        fontFamily: "regular",
+                        justifyContent: "flex-start",
+                        borderRadius: 0,
+                        textTransform: "none",
+                        bgcolor: filter === it.id ? "#c9c9c9" : "transparent",
+                        color: "#000",
+                        "&:hover": { bgcolor: "#e9e9e9" },
+                        px: 2,
                       }}
                     >
-                      {isPending ? (
-                        <Stack direction="row" spacing={1.25} width="100%">
-                          <Button
-                            fullWidth
-                            variant="outlined"
-                            onClick={() =>
-                              item.status !== "rejected" &&
-                              updateStatusSuggestion(item._id, "rejected")
-                            }
-                            sx={{
-                              borderRadius: 22,
-                              borderColor: "#ff5a8325",
-                              bgcolor: "#ff5a8317",
-                              color: "#ff5a82",
-                              fontWeight: 700,
-                              textTransform: "none",
-                              py: 1,
-                              "&:hover": {
-                                bgcolor: "#ffd1dc4d",
-                                borderColor: "#ff5a83",
-                              },
-                            }}
-                          >
-                            {isRejectLoading ? (
-                              <CircularProgress
-                                size={16}
-                                sx={{ color: "#ff5a82" }}
-                              />
-                            ) : (
-                              "Reject Suggestion"
-                            )}
-                          </Button>
-                          <Button
-                            fullWidth
-                            variant="outlined"
-                            onClick={() =>
-                              item.status !== "approved" &&
-                              updateStatusSuggestion(item._id, "approved")
-                            }
-                            sx={{
-                              borderRadius: 22,
-                              borderColor: "#CFEAE0",
-                              bgcolor: "#F2FBF8",
-                              color: "#0B726E",
-                              fontWeight: 700,
-                              textTransform: "none",
-                              py: 1,
-                              "&:hover": {
-                                bgcolor: "#EAF7F2",
-                                borderColor: "#9fd8c5",
-                              },
-                            }}
-                          >
-                            {isApproveLoading ? (
-                              <CircularProgress
-                                size={16}
-                                sx={{ color: "#0B726E" }}
-                              />
-                            ) : (
-                              "Approve Suggestion"
-                            )}
-                          </Button>
-                        </Stack>
-                      ) : (
+                      {it.name}
+                    </Button>
+                  ))}
+                </Stack>
+              </Popover>
+            </Stack>
+          </Stack>
+        </Box>
+
+        <Container maxWidth="md" sx={{ py: 3 }}>
+          {loading ? (
+            <Stack alignItems="center" sx={{ py: 4 }}>
+              <CircularProgress color="primary" />
+              <Typography sx={{ mt: 1, color: "#022E8A", fontSize: 16 }}>
+                Loading suggestions...
+              </Typography>
+            </Stack>
+          ) : suggestions.length === 0 ? (
+            <Box sx={{ textAlign: "center", py: 6 }}>
+              <Typography sx={{ fontWeight: 700, color: "#0A0A0A", mb: 0.5 }}>
+                No suggestions found
+              </Typography>
+              <Typography sx={{ color: "#667085" }}>
+                Try switching tabs or check back later
+              </Typography>
+            </Box>
+          ) : (
+            suggestions.map((item) => {
+              const isPending = item.status === "pending";
+              const isApproveLoading =
+                statusLoading.id === item._id &&
+                statusLoading.type === "approved" &&
+                statusLoading.loading;
+              const isRejectLoading =
+                statusLoading.id === item._id &&
+                statusLoading.type === "rejected" &&
+                statusLoading.loading;
+
+              return (
+                <Box key={item._id}>
+                  <Card
+                    variant="outlined"
+                    sx={{
+                      borderRadius: 2,
+                      p: 1.25,
+                      mt: 1.5,
+                      borderColor: "#fff",
+                      boxShadow: "0px 2px 8px rgba(0,0,0,0.08)",
+                    }}
+                  >
+                    <CardContent sx={{ p: 0 }}>
+                      {item?.requestMessage?.content && (
                         <Box
                           sx={{
-                            px: 1.5,
-                            py: 1,
-                            borderRadius: 22,
-                            border: "1px solid",
-                            borderColor:
-                              item.status === "approved"
-                                ? "#CFEAE0"
-                                : "#ff5a8325",
-                            bgcolor:
-                              item.status === "approved"
-                                ? "#F2FBF8"
-                                : "#ff5a8317",
-                            color:
-                              item.status === "approved"
-                                ? "#0B726E"
-                                : "#ff5a82",
-                            fontWeight: 700,
-                            textAlign: "center",
-                            minWidth: 160,
+                            borderColor: "#022E8A",
+                            borderWidth: 1,
+                            borderStyle: "solid",
+                            p: 1.25,
+                            borderRadius: 1.25,
+                            bgcolor: "#E6ECF8",
+                            mb: 1,
                           }}
                         >
-                          {capitalize(item.status)}
+                          <Typography
+                            sx={{
+                              fontSize: 12,
+                              color: "#022E8A",
+                              fontWeight: 700,
+                              mb: 0.5,
+                            }}
+                          >
+                            Users Request
+                          </Typography>
+                          <Box>
+                            {renderFormattedText(item?.requestMessage?.content)}
+                          </Box>
                         </Box>
                       )}
-                    </Box>
 
-                    {feedbackOpen && (
+                      <Box>{renderFormattedText(item.content)}</Box>
+
+                      <Stack
+                        direction="row"
+                        alignItems="center"
+                        justifyContent="space-between"
+                        sx={{ mt: 1 }}
+                      >
+                        <RegularText
+                          sx={{
+                            color: "secondary.error",
+                          }}
+                        >
+                          This suggestion is purely based out of AI
+                        </RegularText>
+
+                        <Stack direction="row" spacing={1}>
+                          <IconButton
+                            onClick={() =>
+                              setSuggestionDetails({ data: item, open: true })
+                            }
+                            sx={{ color: "primary.icon" }}
+                          >
+                            <InfoOutlinedIcon />
+                          </IconButton>
+                        </Stack>
+                      </Stack>
+
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "center",
+                          alignItems: "center",
+                          mt: 1.5,
+                        }}
+                      >
+                        {isPending ? (
+                          <Stack direction="row" spacing={1.25} width="100%">
+                            <Button
+                              fullWidth
+                              variant="outlined"
+                              onClick={() =>
+                                item.status !== "rejected" &&
+                                updateStatusSuggestion(item._id, "rejected")
+                              }
+                              sx={{
+                                borderRadius: 22,
+                                borderColor: "#ff5a8325",
+                                bgcolor: "#ff5a8317",
+                                color: "#ff5a82",
+                                fontWeight: 700,
+                                textTransform: "none",
+                                py: 1,
+                                "&:hover": {
+                                  bgcolor: "#ffd1dc4d",
+                                  borderColor: "#ff5a83",
+                                },
+                              }}
+                            >
+                              {isRejectLoading ? (
+                                <CircularProgress
+                                  size={16}
+                                  sx={{ color: "#ff5a82" }}
+                                />
+                              ) : (
+                                "Reject Suggestion"
+                              )}
+                            </Button>
+                            <Button
+                              fullWidth
+                              variant="outlined"
+                              onClick={() =>
+                                item.status !== "approved" &&
+                                updateStatusSuggestion(item._id, "approved")
+                              }
+                              sx={{
+                                borderRadius: 22,
+                                borderColor: "#CFEAE0",
+                                bgcolor: "#F2FBF8",
+                                color: "#0B726E",
+                                fontWeight: 700,
+                                textTransform: "none",
+                                py: 1,
+                                "&:hover": {
+                                  bgcolor: "#EAF7F2",
+                                  borderColor: "#9fd8c5",
+                                },
+                              }}
+                            >
+                              {isApproveLoading ? (
+                                <CircularProgress
+                                  size={16}
+                                  sx={{ color: "#0B726E" }}
+                                />
+                              ) : (
+                                "Approve Suggestion"
+                              )}
+                            </Button>
+                          </Stack>
+                        ) : (
+                          <Box
+                            sx={{
+                              px: 1.5,
+                              py: 1,
+                              borderRadius: 22,
+                              border: "1px solid",
+                              borderColor:
+                                item.status === "approved"
+                                  ? "#CFEAE0"
+                                  : "#ff5a8325",
+                              bgcolor:
+                                item.status === "approved"
+                                  ? "#F2FBF8"
+                                  : "#ff5a8317",
+                              color:
+                                item.status === "approved"
+                                  ? "#0B726E"
+                                  : "#ff5a82",
+                              fontWeight: 700,
+                              textAlign: "center",
+                              minWidth: 160,
+                            }}
+                          >
+                            {capitalize(item.status)}
+                          </Box>
+                        )}
+                      </Box>
+
                       <Stack
                         direction="row"
                         alignItems="center"
@@ -605,42 +584,29 @@ export default function AISuggestionsListPage() {
                           }}
                         />
                       </Stack>
-                    )}
-                  </CardContent>
-                </Card>
-
-                {feedbackOpen && (
-                  <Box
-                    sx={{
-                      mt: 1,
-                      p: 1.75,
-                      bgcolor: "#F5FDFA",
-                      border: "1px solid #F5FDFA",
-                      borderRadius: 2.25,
-                    }}
-                  >
-                    <Typography
-                      sx={{
-                        fontSize: 12,
-                        color: "#0B726E",
-                        fontWeight: 800,
-                        mb: 1,
-                      }}
-                    >
-                      Comments
-                    </Typography>
-                    <Typography
-                      sx={{ fontSize: 12, color: "#0B726E", fontWeight: 500 }}
-                    >
-                      {item?.feedback ? item.feedback : "No Feedbacks"}
-                    </Typography>
-                  </Box>
-                )}
-              </Box>
-            );
-          })
-        )}
-
+                      <Box
+                        sx={{
+                          mt: 1,
+                        }}
+                      >
+                        <SemiBoldText
+                          sx={{
+                            mb: 1,
+                          }}
+                        >
+                          Comments
+                        </SemiBoldText>
+                        <RegularText>
+                          {item?.feedback ? item.feedback : "No Feedbacks"}
+                        </RegularText>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Box>
+              );
+            })
+          )}
+        </Container>
         {/* Infinite scroll sentinel */}
         <Box ref={sentinelRef} sx={{ height: 1 }} />
 

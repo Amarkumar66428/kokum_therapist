@@ -7,6 +7,7 @@ import {
   Legend,
 } from "chart.js";
 import { PolarArea } from "react-chartjs-2";
+import { ChartColors } from "../../constant/appColors";
 
 ChartJS.register(RadialLinearScale, ArcElement, Tooltip, Legend);
 
@@ -83,19 +84,6 @@ const BlackBorderPlugin = {
 
 ChartJS.register(OuterLabelPlugin, BlackBorderPlugin);
 
-const COLORS = [
-  "#667da6",
-  "#ef8548",
-  "#e6b7b8",
-  "#5D6BC3",
-  "#cfb6e8",
-  "#edb578",
-  "#8de4ff",
-  "#b1d59d",
-  "#3883f5",
-  "#ef8548",
-];
-
 const VALUES = [50, 50, 50, 50, 50, 50, 50, 50, 50, 50];
 const LABELS = [
   "Abnormal Posture",
@@ -118,7 +106,7 @@ export default function PolarChart({ values }) {
         {
           label: "Profile",
           data: values || VALUES,
-          backgroundColor: COLORS,
+          backgroundColor: ChartColors,
           borderWidth: 0, // we'll draw borders manually
         },
       ],

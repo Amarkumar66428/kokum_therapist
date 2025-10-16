@@ -26,6 +26,7 @@ const SPACING = {
   MD: 12,
   SM: 8,
   XS: 4,
+  XXS: 2,
 };
 
 const BORDER_RADIUS = {

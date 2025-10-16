@@ -24,6 +24,7 @@ import * as Yup from "yup";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import api from "../../utils/axios";
+import RoundedButton from "../../components/button/roundedButton";
 
 const nameRule = Yup.string()
   .trim()
@@ -394,24 +395,14 @@ function BasicDetails({ onNext }) {
                 justifyContent="flex-end"
                 sx={{ mt: 1 }}
               >
-                <Button
+                <RoundedButton
                   type="submit"
-                  variant="outlined"
                   size="large"
-                  sx={{
-                    py: 1,
-                    px: 8,
-                    borderRadius: 10,
-                    boxShadow: 1,
-                    textTransform: "none",
-                    color: "primary.success",
-                    borderColor: "primary.success",
-                    fontWeight: 500,
-                    fontSize: "1em",
-                  }}
+                  disabled={submitting}
+                  sx={{ width: "fit-content", px: 10 }}
                 >
                   Save & Next
-                </Button>
+                </RoundedButton>
               </Stack>
             </Grid>
           </Grid>

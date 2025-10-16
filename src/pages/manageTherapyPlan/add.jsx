@@ -35,6 +35,8 @@ import patientService from "../../services/patientService";
 import { ArrowBackIosNewOutlined } from "@mui/icons-material";
 import SemiBoldText from "../../components/typography/semiBoldText";
 import NormalInput from "../../components/input/normalInput";
+import NormalButton from "../../components/button/normalButton";
+import RoundedButton from "../../components/button/roundedButton";
 
 const PALETTE = {
   primary: "#042F8A",
@@ -188,7 +190,6 @@ export default function TherapyPlanPage() {
         form.append("homeCarePlans", JSON.stringify(basePayload.homeCarePlans));
         files.forEach((file, idx) => {
           const name = file.name || `attachment-${idx + 1}`;
-          const type = file.type || "application/octet-stream";
           form.append("attachments", file, name);
         });
         await api.post("/therapy-plan", form, {
@@ -342,13 +343,13 @@ export default function TherapyPlanPage() {
                 onChange={(e) => setGoalOne(e.target.value)}
                 sx={{ mb: 1 }}
               />
-              <Button
+              <NormalButton
                 variant="text"
                 onClick={() => setShowShortComment((s) => !s)}
-                sx={{ color: PALETTE.accentPink, fontWeight: 600, px: 0 }}
+                sx={{ color: PALETTE.accentPink }}
               >
                 {showShortComment ? "Hide Comment" : "Add Comment"}
-              </Button>
+              </NormalButton>
               {showShortComment && (
                 <NormalInput
                   multiline
@@ -369,8 +370,8 @@ export default function TherapyPlanPage() {
                 border: `1px solid ${PALETTE.inputBorder}`,
               }}
             >
-              <Typography>Long- Term Goals</Typography>
-              <TextField
+              <SemiBoldText>Long- Term Goals</SemiBoldText>
+              <NormalInput
                 multiline
                 minRows={2}
                 fullWidth
@@ -379,22 +380,22 @@ export default function TherapyPlanPage() {
                 onChange={(e) => setGoalTwo(e.target.value)}
                 sx={{ mb: 1 }}
               />
-              <Button
+              <NormalButton
                 variant="text"
                 onClick={() => setShowLongComment((s) => !s)}
-                sx={{ color: PALETTE.accentPink, fontWeight: 600, px: 0 }}
+                sx={{ color: PALETTE.accentPink }}
               >
                 {showLongComment ? "Hide Comment" : "Add Comment"}
-              </Button>
+              </NormalButton>
               {showLongComment && (
-                <TextField
+                <NormalInput
                   multiline
                   minRows={3}
                   fullWidth
                   placeholder="Long-term goal comment"
                   value={longTermComment}
                   onChange={(e) => setLongTermComment(e.target.value)}
-                  sx={{ mt: 1, bgcolor: "#fff", borderRadius: 1 }}
+                  sx={{ mt: 1 }}
                 />
               )}
             </Paper>
@@ -407,18 +408,17 @@ export default function TherapyPlanPage() {
               justifyContent="space-between"
               alignItems="center"
             >
-              <Typography>Home Care Plan</Typography>
-              <Button
+              <SemiBoldText>Home Care Plan</SemiBoldText>
+              <NormalButton
+                variant="text"
                 startIcon={<AddCircleOutlineIcon />}
                 onClick={handleAddPlan}
                 sx={{
-                  color: PALETTE.accentPink,
-                  textTransform: "none",
-                  fontWeight: 700,
+                  color: "primary.icon",
                 }}
               >
                 Add
-              </Button>
+              </NormalButton>
             </Box>
 
             <Stack spacing={2}>
@@ -444,8 +444,8 @@ export default function TherapyPlanPage() {
 
                   <Grid container spacing={2}>
                     <Grid size={{ xs: 12, md: 4 }}>
-                      <Typography sx={{ mb: 1 }}>Title</Typography>
-                      <TextField
+                      <SemiBoldText sx={{ mb: 1 }}>Title</SemiBoldText>
+                      <NormalInput
                         fullWidth
                         size="small"
                         placeholder="Enter Title"
@@ -457,7 +457,9 @@ export default function TherapyPlanPage() {
                     </Grid>
 
                     <Grid size={{ xs: 12, md: 4 }}>
-                      <Typography sx={{ mb: 1 }}>Assigned Category</Typography>
+                      <SemiBoldText sx={{ mb: 1 }}>
+                        Assigned Category
+                      </SemiBoldText>
                       <FormControl fullWidth size="small">
                         <InputLabel>Category</InputLabel>
                         <Select
@@ -482,8 +484,8 @@ export default function TherapyPlanPage() {
                     </Grid>
 
                     <Grid size={{ xs: 12, md: 4 }}>
-                      <Typography sx={{ mb: 1 }}>Schedule</Typography>
-                      <TextField
+                      <SemiBoldText sx={{ mb: 1 }}>Schedule</SemiBoldText>
+                      <NormalInput
                         fullWidth
                         size="small"
                         placeholder="e.g., Daily, Weekly"
@@ -495,8 +497,8 @@ export default function TherapyPlanPage() {
                     </Grid>
 
                     <Grid size={{ xs: 12 }}>
-                      <Typography sx={{ mb: 1 }}>Instructions</Typography>
-                      <TextField
+                      <SemiBoldText sx={{ mb: 1 }}>Instructions</SemiBoldText>
+                      <NormalInput
                         fullWidth
                         multiline
                         minRows={3}
@@ -513,7 +515,9 @@ export default function TherapyPlanPage() {
                     </Grid>
 
                     <Grid size={{ xs: 12, md: 6 }}>
-                      <Typography sx={{ mb: 1 }}>Attach Reference</Typography>
+                      <SemiBoldText sx={{ mb: 1 }}>
+                        Attach Reference
+                      </SemiBoldText>
                       <Box
                         component="label"
                         htmlFor={`file-input-${idx}`}
@@ -552,8 +556,8 @@ export default function TherapyPlanPage() {
 
           {/* General notes */}
           <Stack spacing={2}>
-            <Typography>General Notes</Typography>
-            <TextField
+            <SemiBoldText>General Notes</SemiBoldText>
+            <NormalInput
               multiline
               minRows={3}
               fullWidth
@@ -568,42 +572,29 @@ export default function TherapyPlanPage() {
           <Box sx={{ maxWidth: 700, mx: "auto" }}>
             <Grid container spacing={2}>
               <Grid size={{ xs: 12, md: 6 }}>
-                <Button
+                <RoundedButton
                   onClick={handleCancel}
                   fullWidth
                   variant="outlined"
                   sx={{
-                    py: 1.6,
-                    borderRadius: 6,
                     borderColor: "#00000018",
                     bgcolor: "#fff",
                     color: "#000",
-                    fontWeight: 700,
                   }}
                   disabled={submitting}
                 >
                   Cancel
-                </Button>
+                </RoundedButton>
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
-                <Button
+                <RoundedButton
                   onClick={handleSubmit}
                   fullWidth
-                  sx={{
-                    py: 1.6,
-                    borderRadius: 6,
-                    fontWeight: 700,
-                    bgcolor: "#F2FBF8",
-                    color: PALETTE.greenCTA,
-                    border: "1px solid #CFEAE0",
-                    boxShadow: "0px 6px 12px rgba(26,26,46,0.08)",
-                    "&:hover": { bgcolor: "#E6F7F0" },
-                  }}
                   disabled={submitting}
                   startIcon={submitting ? <CircularProgress size={16} /> : null}
                 >
                   {submitting ? "Saving..." : "Save"}
-                </Button>
+                </RoundedButton>
               </Grid>
             </Grid>
           </Box>

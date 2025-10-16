@@ -17,7 +17,7 @@ import HistoryIcon from "@mui/icons-material/History";
 import usePatient from "../../hooks/usePatient";
 import patientService from "../../services/patientService";
 import ChildDetailCard from "../../components/childDetailCard";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import SemiBoldText from "../../components/typography/semiBoldText";
 import RegularText from "../../components/typography/regularText";
 import { AttachFile } from "@mui/icons-material";
@@ -33,7 +33,8 @@ const formatLongDate = (iso) =>
     : "—";
 
 export default function TherapyPlanViewPage() {
-  const planId = useParams().planId;
+  const location = useLocation();
+  const planId = location.state?.planId;
   const navigate = useNavigate();
   const { patient } = usePatient();
 

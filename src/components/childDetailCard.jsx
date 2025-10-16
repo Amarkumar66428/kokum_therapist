@@ -1,12 +1,14 @@
 import React from "react";
-import { Box, Typography, Paper, Card } from "@mui/material";
+import { Box, Card } from "@mui/material";
 import SemiBoldText from "./typography/semiBoldText";
+import { BORDER_RADIUS, ELEVATION } from "../constant/lookUpConstant";
 
 const ChildDetailCard = ({ childData }) => {
   return (
     <Card
+      elevation={ELEVATION.LOW}
       sx={{
-        borderRadius: "12px",
+        borderRadius: BORDER_RADIUS.SM,
         overflow: "hidden",
         background: "secondary.main",
       }}

@@ -21,7 +21,7 @@ import SemiBoldText from "./typography/semiBoldText";
 import RoundedButton from "./button/roundedButton";
 
 const ACTIVITY_COLORS = [
-  "#ef8548",
+  "#050404ff",
   "#667da6",
   "#8de4ff",
   "#3883f5",

@@ -25,7 +25,8 @@ export const authRouters = [
 export const appRouters = [
   {
     path: "/managePatient/basicDetails",
-    title: "Add New Patient",
+    menuTitle: "Add New Patient",
+    title: "Basic Details",
     inSideMenu: true,
     icon: PersonOutlineOutlined,
     component: asyncComponent(() =>
@@ -34,7 +35,7 @@ export const appRouters = [
   },
   {
     path: "/patientProfile",
-    title: "Patient Profile",
+    menuTitle: "Patient Profile",
     inSideMenu: true,
     isSearch: true,
     icon: SpaceDashboardOutlined,
@@ -44,33 +45,37 @@ export const appRouters = [
   },
   {
     path: "/managePatient/childDetails",
+    showSideMenu: true,
+    title: "Child Details",
     component: asyncComponent(() =>
       import("../pages/managePatient/childDetails.jsx")
     ),
   },
   {
     path: "/managePatient/sensoryProfile",
+    showSideMenu: true,
+    title: "Sensory Profile",
     component: asyncComponent(() =>
       import("../pages/managePatient/sensoryProfile.jsx")
     ),
   },
   {
     path: "/reports",
-    title: "Reports",
+    menuTitle: "Reports",
     inSideMenu: true,
     icon: DisplaySettingsOutlined,
     component: asyncComponent(() => import("../pages/reports/index.jsx")),
   },
   {
     path: "/sos",
-    title: "SOS",
+    menuTitle: "SOS",
     inSideMenu: true,
     icon: ChatBubbleOutlineOutlined,
     component: asyncComponent(() => import("../pages/sos/index.jsx")),
   },
   {
     path: "/appointments",
-    title: "Appointments",
+    menuTitle: "Appointments",
     inSideMenu: true,
     icon: PendingActionsOutlined,
     component: asyncComponent(() => import("../pages/appointment/index.jsx")),
@@ -84,7 +89,7 @@ export const appRouters = [
   },
   {
     path: "/aiSuggestions/all",
-    title: "Ai Suggestions",
+    menuTitle: "Ai Suggestions",
     inSideMenu: true,
     icon: AutoAwesome,
     component: asyncComponent(() =>
@@ -93,7 +98,7 @@ export const appRouters = [
   },
   {
     path: "/contacts-us",
-    title: "Contact Us",
+    menuTitle: "Contact Us",
     inSideMenu: true,
     icon: PhoneAndroidOutlined,
     component: asyncComponent(() => import("../pages/contactUs/index.jsx")),

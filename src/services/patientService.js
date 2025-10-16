@@ -40,6 +40,7 @@ const patientService = {
   },
 
   getTherapyPlanById: async (patientId, { date, all = false, planId } = {}) => {
+    console.log('planId: ', planId);
     try {
       const params = {};
 

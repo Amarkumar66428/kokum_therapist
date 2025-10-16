@@ -2,22 +2,20 @@
 import React, { useEffect, useState, useCallback } from "react";
 import {
   AppBar,
-  Toolbar,
-  IconButton,
-  Typography,
   Container,
   Box,
   Stack,
   Card,
   CardContent,
-  Button,
   CircularProgress,
 } from "@mui/material";
 import patientService from "../../services/patientService";
 import usePatient from "../../hooks/usePatient";
 import ChildDetailCard from "../../components/childDetailCard";
-import { ArrowBackIosNewOutlined } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
+import RegularText from "../../components/typography/regularText";
+import SemiBoldText from "../../components/typography/semiBoldText";
+import RoundedButton from "../../components/button/roundedButton";
 
 const formatLongDate = (iso) =>
   new Date(iso).toLocaleDateString("en-US", {
@@ -44,123 +42,96 @@ export default function TherapyHistoryPage() {
   const navigate = useNavigate();
   const { patient } = usePatient();
 
-  const patientId = patient?.patientId;
+  const patientId = patient?.patientCode;
 
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [sessions, setSessions] = useState([]);
   const [errorMsg, setErrorMsg] = useState("");
 
-  const fetchPlans = useCallback(
-    async (isRefresh = false) => {
-      try {
-        setLoading(true);
-        if (isRefresh) setRefreshing(true);
-        setErrorMsg("");
+  const fetchPlans = useCallback(async () => {
+    try {
+      setLoading(true);
+      setErrorMsg("");
 
-        if (!patientId) {
-          setSessions([]);
-          setErrorMsg("No patient selected.");
-          return;
-        }
-
-        const res = await patientService.getTherapyPlanById(patientId, {
-          all: true,
-        });
-
-        const raw = Array.isArray(res?.therapyPlans) ? res?.therapyPlans : [];
-
-        const mapped = raw
-          .map((p) => ({
-            id: String(p._id || `${p.planDate}-${p.startTime}`),
-            dateISO:
-              p.planDate ||
-              p.createdAt ||
-              p.updatedAt ||
-              new Date().toISOString(),
-            start: to12hr(p.startTime),
-            end: to12hr(p.endTime),
-            type: p?.homeCarePlans?.[0]?.assignedCategory || "Therapy",
-          }))
-          .sort((a, b) => new Date(b.dateISO) - new Date(a.dateISO));
-
-        setSessions(mapped);
-      } catch (err) {
-        const msg =
-          err?.response?.data?.message ||
-          err?.response?.data?.error ||
-          err?.message ||
-          "Failed to fetch therapy plans.";
+      if (!patientId) {
         setSessions([]);
-        setErrorMsg(msg);
-      } finally {
-        setLoading(false);
-        setRefreshing(false);
+        setErrorMsg("No patient selected.");
+        return;
       }
-    },
-    [patientId]
-  );
+
+      const res = await patientService.getTherapyPlanById(patientId, {
+        all: true,
+      });
+
+      const raw = Array.isArray(res?.therapyPlans) ? res?.therapyPlans : [];
+
+      const mapped = raw
+        .map((p) => ({
+          id: String(p._id || `${p.planDate}-${p.startTime}`),
+          dateISO:
+            p.planDate ||
+            p.createdAt ||
+            p.updatedAt ||
+            new Date().toISOString(),
+          start: to12hr(p.startTime),
+          end: to12hr(p.endTime),
+          type: p?.homeCarePlans?.[0]?.assignedCategory || "Therapy",
+        }))
+        .sort((a, b) => new Date(b.dateISO) - new Date(a.dateISO));
+
+      setSessions(mapped);
+    } catch (err) {
+      const msg =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        err?.message ||
+        "Failed to fetch therapy plans.";
+      setSessions([]);
+      setErrorMsg(msg);
+    } finally {
+      setLoading(false);
+    }
+  }, [patientId]);
 
   useEffect(() => {
     fetchPlans();
   }, [patientId, fetchPlans]);
 
-  const handleRefresh = () => fetchPlans(true);
-
-  const [, ...rest] = sessions;
+  const [_, ...rest] = sessions;
 
   return (
-    <Container
-      maxWidth="lg"
-      sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
-    >
-      <AppBar
-        position="static"
-        color="transparent"
-        elevation={0}
-        sx={{ width: "50%" }}
-      >
-        <ChildDetailCard
-          childData={{
-            name: patient?.patientName,
-            age: patient?.patientAge,
-            gender: patient?.patientGender,
-            caretakerName: patient?.caretakerName,
-          }}
-        />
+    <Container maxWidth="lg">
+      <AppBar position="static" color="transparent" elevation={0}>
+        <Box sx={{ width: "50%", mx: "auto" }}>
+          <ChildDetailCard
+            childData={{
+              name: patient?.patientName,
+              age: patient?.patientAge,
+              gender: patient?.patientGender,
+              caretakerName: patient?.caretakerName,
+            }}
+          />
+        </Box>
       </AppBar>
-
-      {/* Refresh control alternative */}
-      <Stack direction="row" justifyContent="flex-end" sx={{ mb: 1 }}>
-        <Button
-          variant="text"
-          size="small"
-          onClick={handleRefresh}
-          disabled={refreshing}
-        >
-          {refreshing ? "Refreshing..." : "Refresh"}
-        </Button>
-      </Stack>
 
       {loading ? (
         <Stack alignItems="center" sx={{ pt: 5 }}>
-          <CircularProgress size={36} sx={{ color: "#082878" }} />
-          <Typography sx={{ mt: 1, color: "#082878" }}>Loading…</Typography>
+          <CircularProgress size={36} sx={{ color: "#000" }} />
+          <RegularText>Loading…</RegularText>
         </Stack>
       ) : rest.length === 0 ? (
         <Box sx={{ pt: 5, textAlign: "center" }}>
-          <Typography sx={{ color: "#0A1F44", fontSize: 16, fontWeight: 600 }}>
-            No therapy plan found for this child.
-          </Typography>
+          <RegularText>No therapy plan found for this child.</RegularText>
           {!!errorMsg && (
-            <Typography sx={{ mt: 0.75, color: "#CC3344" }}>
+            <RegularText sx={{ mt: 0.75, color: "#CC3344" }}>
               {errorMsg}
-            </Typography>
+            </RegularText>
           )}
         </Box>
       ) : (
         rest.map((s) => (
           <Card
+            fullWidth
             key={s.id}
             variant="outlined"
             sx={{
@@ -168,51 +139,35 @@ export default function TherapyHistoryPage() {
               borderRadius: 2,
               borderColor: "#EEF2FF",
               bgcolor: "#FFFFFF",
-              // subtle elevation parity
               boxShadow: { xs: "0px 6px 10px rgba(0,0,0,0.06)" },
             }}
           >
             <CardContent sx={{ p: 2.25, pr: 2 }}>
               <Stack direction="row" alignItems="flex-start">
                 <Box sx={{ flex: 1, pr: 1.5 }}>
-                  <Typography
+                  <SemiBoldText
                     sx={{
-                      fontSize: 16,
-                      fontWeight: 800,
-                      color: "#0A1F44",
                       mb: 0.75,
                     }}
                   >
                     {formatLongDate(s.dateISO)}
-                  </Typography>
-                  <Typography sx={{ fontSize: 14, color: "#0A1F44", mb: 1.25 }}>
+                  </SemiBoldText>
+                  <RegularText sx={{ mb: 1.25 }}>
                     {s.start} – {s.end}
-                  </Typography>
+                  </RegularText>
                   {/* <Typography sx={{ fontSize: 14, fontWeight: 700, color: "#FF5A82" }}>
                       {s.type}
                     </Typography> */}
                 </Box>
 
-                <Button
-                  variant="contained"
-                  disableElevation
+                <RoundedButton
                   onClick={() =>
-                    navigate && navigate("TherapyPlanView", { planId: s.id })
+                    navigate("/therapyPlans", { state: { planId: s.id } })
                   }
-                  sx={{
-                    textTransform: "none",
-                    borderRadius: 14,
-                    py: 1,
-                    px: 2.25,
-                    bgcolor: "#EEF4FF",
-                    color: "#0A1F44",
-                    fontWeight: 800,
-                    boxShadow: "none",
-                    "&:hover": { bgcolor: "#E2EBFF", boxShadow: "none" },
-                  }}
+                  sx={{ width: "fit-content", padding: 0, height: 32 }}
                 >
                   View
-                </Button>
+                </RoundedButton>
               </Stack>
             </CardContent>
           </Card>

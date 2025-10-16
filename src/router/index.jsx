@@ -23,6 +23,7 @@ const AppRouter = () => {
           title = "",
           isLayout = true,
           inSideMenu = false,
+          showSideMenu = false,
           role,
           isSearch = false,
           isPatientView = false,
@@ -32,6 +33,7 @@ const AppRouter = () => {
             <AppLayout
               title={title}
               inSideMenu={inSideMenu}
+              showSideMenu={showSideMenu}
               isSearch={isSearch}
               isPatientView={isPatientView}
             >
