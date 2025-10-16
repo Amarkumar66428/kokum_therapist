@@ -26,8 +26,10 @@ import dayjs from "dayjs";
 import therapistService from "../../services/therapistService";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ArrowBackIosNewOutlined } from "@mui/icons-material";
+import SemiBoldText from "../../components/typography/semiBoldText";
+import RoundedButton from "../../components/button/roundedButton";
+import NormalInput from "../../components/input/normalInput";
 
-const formatDate = (date) => dayjs(date).format("DD/MM/YYYY");
 const to24Hour = (dateObj) => dayjs(dateObj).format("HH:mm");
 
 export default function AppointmentSchedulePage() {
@@ -149,175 +151,129 @@ export default function AppointmentSchedulePage() {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <AppBar
-        position="sticky"
-        color="inherit"
-        elevation={0}
-        sx={{
-          boxShadow: "none",
-          borderRadius: 2,
-        }}
-      >
-        <Toolbar sx={{ px: 2 }}>
-          <IconButton onClick={() => navigate(-1)}>
-            <ArrowBackIosNewOutlined />
-          </IconButton>
-          <Typography>Appointment Schedule</Typography>
-        </Toolbar>
-      </AppBar>
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
 
-      <Container maxWidth="sm" sx={{ py: 3 }}>
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-        )}
+      <Card variant="outlined" sx={{ borderRadius: 2, mt: 4 }}>
+        <CardContent>
+          {loading ? (
+            <Stack spacing={2}>
+              <Skeleton variant="text" width={120} height={24} />
+              <Skeleton variant="rounded" height={56} />
+              <Skeleton variant="text" width={90} height={24} />
+              <Skeleton variant="rounded" height={100} />
+              <Skeleton variant="text" width={90} height={24} />
+              <Skeleton variant="rounded" height={56} />
+              <Skeleton variant="text" width={90} height={24} />
+              <Skeleton variant="rounded" height={150} />
+            </Stack>
+          ) : (
+            <Grid container spacing={4}>
+              <Grid size={{ xs: 12, sm: 4 }}>
+                <SemiBoldText>Patient Name</SemiBoldText>
+                <Autocomplete
+                  options={patientList}
+                  value={patientValue}
+                  onChange={(_, newVal) =>
+                    onSelectCaretaker(newVal?.value || "")
+                  }
+                  isOptionEqualToValue={(o, v) => o.value === v.value}
+                  getOptionLabel={(o) => o?.label || ""}
+                  renderInput={(params) => (
+                    <NormalInput {...params} placeholder="Select Patient" />
+                  )}
+                  disableClearable={false}
+                />
+              </Grid>
 
-        <Card variant="outlined" sx={{ borderRadius: 2 }}>
-          <CardContent>
-            {loading ? (
-              <Stack spacing={2}>
-                <Skeleton variant="text" width={120} height={24} />
-                <Skeleton variant="rounded" height={56} />
-                <Skeleton variant="text" width={90} height={24} />
-                <Skeleton variant="rounded" height={100} />
-                <Skeleton variant="text" width={90} height={24} />
-                <Skeleton variant="rounded" height={56} />
-                <Skeleton variant="text" width={90} height={24} />
-                <Skeleton variant="rounded" height={150} />
-              </Stack>
-            ) : (
-              <Stack spacing={3}>
+              {/* Patient ID (readonly) */}
+              <Grid size={{ xs: 12, sm: 4 }}>
+                <SemiBoldText>Patient ID</SemiBoldText>
+                <NormalInput
+                  fullWidth
+                  value={patientProfile.id}
+                  placeholder="Patient id"
+                  InputProps={{ readOnly: true }}
+                />
+              </Grid>
+
+              {/* Caretaker Name (readonly) */}
+              <Grid size={{ xs: 12, sm: 4 }}>
+                <SemiBoldText>Caretaker Name</SemiBoldText>
+                <NormalInput
+                  fullWidth
+                  value={patientProfile.caretakerName}
+                  placeholder="Enter Name"
+                  InputProps={{ readOnly: true }}
+                />
+              </Grid>
+
+              {/* Date and Time */}
+
+              <Grid size={{ xs: 12, sm: 3 }}>
                 <Stack spacing={1}>
-                  <Typography sx={{ fontWeight: 500, color: "#242E49" }}>
-                    Patient Name
-                  </Typography>
-                  <Autocomplete
-                    options={patientList}
-                    value={patientValue}
-                    onChange={(_, newVal) =>
-                      onSelectCaretaker(newVal?.value || "")
-                    }
-                    isOptionEqualToValue={(o, v) => o.value === v.value}
-                    getOptionLabel={(o) => o?.label || ""}
-                    renderInput={(params) => (
-                      <TextField {...params} placeholder="Select Patient" />
-                    )}
-                    disableClearable={false}
+                  <SemiBoldText>
+                    Date <span style={{ color: "#6B7280" }}>(DD/MM/YYYY)</span>
+                  </SemiBoldText>
+                  <DatePicker
+                    value={selectedDate}
+                    onChange={(v) => v && setSelectedDate(v)}
+                    format="D MM, YYYY"
                   />
                 </Stack>
-
-                {/* Patient ID (readonly) */}
+              </Grid>
+              <Grid size={{ xs: 12, sm: 3 }}>
                 <Stack spacing={1}>
-                  <Typography sx={{ fontWeight: 500, color: "#242E49" }}>
-                    Patient ID
-                  </Typography>
-                  <TextField
-                    value={patientProfile.id}
-                    placeholder="Patient id"
-                    InputProps={{ readOnly: true }}
+                  <SemiBoldText>
+                    Time{" "}
+                    <span style={{ color: "#6B7280" }}>(hours/minutes)</span>
+                  </SemiBoldText>
+                  <TimePicker
+                    value={startTime}
+                    onChange={(v) => v && setStartTime(v)}
+                    ampm
+                    minutesStep={1}
+                    format="hh:mm A"
                   />
                 </Stack>
+              </Grid>
 
-                {/* Caretaker Name (readonly) */}
-                <Stack spacing={1}>
-                  <Typography sx={{ fontWeight: 500, color: "#242E49" }}>
-                    Caretaker Name
-                  </Typography>
-                  <TextField
-                    value={patientProfile.caretakerName}
-                    placeholder="Enter Name"
-                    InputProps={{ readOnly: true }}
-                  />
-                </Stack>
-
-                {/* Date and Time */}
-                <Grid container spacing={1.5}>
-                  <Grid size={{ xs: 12, sm: 6 }}>
-                    <Stack spacing={1}>
-                      <Typography sx={{ fontWeight: 500, color: "#242E49" }}>
-                        Date{" "}
-                        <span style={{ color: "#6B7280" }}>(DD/MM/YYYY)</span>
-                      </Typography>
-                      <DatePicker
-                        value={selectedDate}
-                        onChange={(v) => v && setSelectedDate(v)}
-                        format="DD/MM/YYYY"
-                        slots={{
-                          openPickerIcon: CalendarMonthIcon,
-                        }}
-                        slotProps={{
-                          textField: {
-                            placeholder: formatDate(selectedDate),
-                          },
-                        }}
-                      />
-                    </Stack>
-                  </Grid>
-                  <Grid size={{ xs: 12, sm: 6 }}>
-                    <Stack spacing={1}>
-                      <Typography sx={{ fontWeight: 500, color: "#242E49" }}>
-                        Time{" "}
-                        <span style={{ color: "#6B7280" }}>
-                          (hours/minutes)
-                        </span>
-                      </Typography>
-                      <TimePicker
-                        value={startTime}
-                        onChange={(v) => v && setStartTime(v)}
-                        ampm
-                        minutesStep={1}
-                        // Display the same 12-hour text in the input
-                        format="hh:mm A"
-                      />
-                    </Stack>
-                  </Grid>
-                </Grid>
-
-                {/* Notes with Clear */}
-                <Stack spacing={1}>
-                  <Stack
-                    direction="row"
-                    alignItems="center"
-                    justifyContent="space-between"
+              {/* Notes with Clear */}
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  justifyContent="space-between"
+                >
+                  <SemiBoldText>Add Notes</SemiBoldText>
+                  <Button
+                    color="error"
+                    onClick={() => setNotes("")}
+                    size="small"
                   >
-                    <Typography
-                      sx={{ fontWeight: 500, color: "#242E49", fontSize: 14 }}
-                    >
-                      Add Notes
-                    </Typography>
-                    <Button
-                      color="error"
-                      onClick={() => setNotes("")}
-                      size="small"
-                    >
-                      Clear
-                    </Button>
-                  </Stack>
-                  <TextField
-                    placeholder="Add Notes"
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    multiline
-                    minRows={4}
-                  />
+                    Clear
+                  </Button>
                 </Stack>
+                <NormalInput
+                  fullWidth
+                  placeholder="Add Notes"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  multiline
+                  minRows={4}
+                />
+              </Grid>
 
-                {/* CTA */}
-                <Button
-                  variant="outlined"
+              {/* CTA */}
+              <Grid size={{ xs: 12 }} textAlign="right">
+                <RoundedButton
+                  sx={{ width: "30em" }}
                   onClick={() => {
                     if (createLoading) return;
                     onSchedule();
-                  }}
-                  sx={{
-                    borderRadius: 999,
-                    py: 1.25,
-                    bgcolor: "#F2FBF8",
-                    borderColor: "#CFEAE0",
-                    color: "#0B726E",
-                    fontWeight: 700,
-                    "&:hover": { bgcolor: "#EAF7F2", borderColor: "#BDE1D5" },
                   }}
                 >
                   {createLoading ? (
@@ -328,12 +284,12 @@ export default function AppointmentSchedulePage() {
                   ) : (
                     "Schedule Appointment"
                   )}
-                </Button>
-              </Stack>
-            )}
-          </CardContent>
-        </Card>
-      </Container>
+                </RoundedButton>
+              </Grid>
+            </Grid>
+          )}
+        </CardContent>
+      </Card>
     </LocalizationProvider>
   );
 }

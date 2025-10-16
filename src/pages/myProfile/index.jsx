@@ -12,6 +12,10 @@ import {
 import PersonIcon from "@mui/icons-material/Person";
 import therapistService from "../../services/therapistService";
 import useAuth from "../../hooks/useAuth";
+import RoundedButton from "../../components/button/roundedButton";
+import SemiBoldText from "../../components/typography/semiBoldText";
+import RegularText from "../../components/typography/regularText";
+import { ELEVATION } from "../../constant/lookUpConstant";
 
 const MyProfile = () => {
   const therapistId = useAuth()?.id;
@@ -77,17 +81,10 @@ const MyProfile = () => {
             bgcolor: "error.lighter",
           }}
         >
-          <Typography color="error.main" variant="h6" gutterBottom>
-            {error}
-          </Typography>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={fetchTherapist}
-            sx={{ mt: 2 }}
-          >
+          <SemiBoldText>{error}</SemiBoldText>
+          <RoundedButton onClick={fetchTherapist} sx={{ mt: 2 }}>
             Retry
-          </Button>
+          </RoundedButton>
         </Paper>
       </Box>
     );
@@ -103,7 +100,7 @@ const MyProfile = () => {
           alignItems: "center",
         }}
       >
-        <Typography>No therapist data available.</Typography>
+        <SemiBoldText>No therapist data available.</SemiBoldText>
       </Box>
     );
   }
@@ -136,69 +133,48 @@ const MyProfile = () => {
       }}
     >
       <Grid item xs={5} sm={4} md={3}>
-        <Typography color="text.secondary" fontWeight={500}>
-          {label}
-        </Typography>
+        <SemiBoldText>{label}</SemiBoldText>
       </Grid>
       <Grid item xs={7} sm={8} md={9}>
-        <Typography>{value || "-"}</Typography>
+        <RegularText>{value || "-"}</RegularText>
       </Grid>
     </Grid>
   );
 
   return (
     <Box sx={{ minHeight: "100vh", p: 1 }}>
-      <Typography variant="h6">Therapist Profile</Typography>
-
       <Box sx={{ px: { xs: 1 }, mt: 2 }}>
         {/* Profile Card */}
         <Paper
-          elevation={3}
+          elevation={ELEVATION.LOW}
           sx={{
             p: 3,
             display: "flex",
             alignItems: "center",
             gap: 2,
             borderRadius: 3,
-            backgroundColor: "#EFF9FD",
+            backgroundColor: "secondary.main",
           }}
         >
           <Avatar
             sx={{
               width: 70,
               height: 70,
-              bgcolor: "#042F8A",
+              bgcolor: "primary.icon",
             }}
           >
             <PersonIcon fontSize="large" />
           </Avatar>
 
           <Box>
-            <Typography variant="h6" fontWeight={700} color="#042F8A">
-              {fields.name}
-            </Typography>
-            <Typography variant="body2" color="#042F8A">
-              {fields.clinicName}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {fields.email}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {fields.phone}
-            </Typography>
+            <SemiBoldText>{fields.name}</SemiBoldText>
+            <RegularText>{fields.clinicName}</RegularText>
           </Box>
         </Paper>
 
         {/* Contact & Clinic Info */}
-        <Paper sx={{ p: 3, mt: 3, borderRadius: 3 }}>
-          <Typography
-            variant="subtitle1"
-            fontWeight={700}
-            color="#042F8A"
-            gutterBottom
-          >
-            Contact & Clinic
-          </Typography>
+        <Paper elevation={ELEVATION.LOW} sx={{ p: 3, mt: 3, borderRadius: 3 }}>
+          <SemiBoldText mb={1}>Contact & Clinic</SemiBoldText>
           <Divider sx={{ mb: 1 }} />
           {renderRow("Clinic", fields.clinicName)}
           {renderRow("Phone", fields.phone)}
@@ -211,15 +187,11 @@ const MyProfile = () => {
         </Paper>
 
         {/* Metadata */}
-        <Paper sx={{ p: 3, mt: 3, borderRadius: 3, mb: 6 }}>
-          <Typography
-            variant="subtitle1"
-            fontWeight={700}
-            color="#042F8A"
-            gutterBottom
-          >
-            Metadata
-          </Typography>
+        {/* <Paper
+          elevation={ELEVATION.LOW}
+          sx={{ p: 3, mt: 3, borderRadius: 3, mb: 6 }}
+        >
+          <SemiBoldText>Metadata</SemiBoldText>
           <Divider sx={{ mb: 1 }} />
           {renderRow("ID", fields._id)}
           {renderRow("Role", fields.role)}
@@ -232,7 +204,7 @@ const MyProfile = () => {
             "Updated At",
             fields.updatedAt ? new Date(fields.updatedAt).toLocaleString() : "-"
           )}
-        </Paper>
+        </Paper> */}
       </Box>
     </Box>
   );

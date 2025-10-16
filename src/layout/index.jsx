@@ -6,7 +6,13 @@ import SideBar from "./sidebar";
 const DRAWER_WIDTH = 240;
 const MINI_DRAWER_WIDTH = 60;
 
-const AppLayout = ({ isSearch, isPatientView, children }) => {
+const AppLayout = ({
+  inSideMenu,
+  isSearch,
+  isPatientView,
+  children,
+  title,
+}) => {
   const [open, setOpen] = useState(true);
 
   const toggleDrawer = () => {
@@ -21,16 +27,20 @@ const AppLayout = ({ isSearch, isPatientView, children }) => {
       }}
     >
       <Header
+        title={title}
+        inSideMenu={inSideMenu}
         drawerWidth={DRAWER_WIDTH}
         isSearch={isSearch}
         isPatientView={isPatientView}
         toggleDrawer={toggleDrawer}
       />
-      <SideBar
-        open={open}
-        drawerWidth={DRAWER_WIDTH}
-        miniDrawerWidth={MINI_DRAWER_WIDTH}
-      />
+      {inSideMenu && (
+        <SideBar
+          open={open}
+          drawerWidth={DRAWER_WIDTH}
+          miniDrawerWidth={MINI_DRAWER_WIDTH}
+        />
+      )}
       <Box
         component="main"
         sx={{

@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import "./timeline-calendar.scss";
 import { Card } from "@mui/material";
+import RegularText from "../typography/regularText";
+import { AppColors } from "../../constant/appColors";
 
 function TimelineCalendar({
   events = [],
@@ -206,9 +208,13 @@ function TimelineCalendar({
                       left,
                       width: colWidth,
                       borderLeftColor:
-                        ev.type === "routine" ? "#3B82F6" : "#FF5A82",
+                        ev.type === "routine"
+                          ? AppColors.HLT_MAIN
+                          : AppColors.LABEL,
                       borderBottomColor:
-                        ev.type === "routine" ? "#3B82F6" : "#FF5A82",
+                        ev.type === "routine"
+                          ? AppColors.HLT_MAIN
+                          : AppColors.LABEL,
                     }}
                     title={`${ev.name || ev.customName} — ${eventDuration(
                       ev.startTime,
@@ -256,10 +262,11 @@ function TimelineCalendar({
             <div
               className="legend-bar"
               style={{
-                backgroundColor: item === "Routines" ? "#3B82F6" : "#FF5A82",
+                backgroundColor:
+                  item === "Routines" ? AppColors.HLT_MAIN : AppColors.LABEL,
               }}
             />
-            <span className="legend-text">{item}</span>
+            <RegularText>{item}</RegularText>
           </div>
         ))}
       </div>

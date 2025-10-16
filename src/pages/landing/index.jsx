@@ -4,6 +4,9 @@ import welcomeSvg from "../../assets/svg/welcome.svg";
 import welcomeTitleSvg from "../../assets/svg/welcomeTitle.svg";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
+import SemiBoldText from "../../components/typography/semiBoldText";
+import RegularText from "../../components/typography/regularText";
+import RoundedButton from "../../components/button/roundedButton";
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -24,51 +27,37 @@ const LandingPage = () => {
     <Container maxWidth={false}>
       <Box
         sx={{
-          width: 720,
+          width: 1120,
           margin: "0 auto",
           display: "flex",
-          flexDirection: "column",
+          flexDirection: "row",
+          alignItems: "center",
           gap: 5,
           justifyContent: "center",
           height: "100vh",
         }}
       >
         <Box textAlign="center">
-          <img src={welcomeSvg} alt="Healthcare team" />
+          <img
+            src={welcomeSvg}
+            width={400}
+            height={400}
+            alt="Healthcare team"
+          />
         </Box>
-        <Box textAlign="center">
-          <Typography
-            variant="h4"
-            component="h1"
-            color="#242e49"
-            fontWeight={"bold"}
-            gutterBottom
-          >
-            Welcome to
-          </Typography>
-
-          <figure>
-            <img src={welcomeTitleSvg} alt="Logo" />
-          </figure>
-        </Box>
-        <Box textAlign="center">
-          <Button
-            variant="contained"
-            sx={{
-              width: 250,
-              color: "primary.main",
-              borderRadius: 10,
-              fontSize: "1em",
-              px: 5,
-              py: 1,
-              border: "1px solid #ccc",
-              bgcolor: "#fff",
-              textTransform: "none",
-            }}
-            onClick={handleClick}
-          >
-            Get Started
-          </Button>
+        <Box>
+          <Box textAlign="center">
+            <SemiBoldText fontSize="4em">Welcome to</SemiBoldText>
+            <figure>
+              <img src={welcomeTitleSvg} width={400} height={100} alt="Logo" />
+            </figure>
+          </Box>
+          <Box textAlign="center" mt={4}>
+            <RoundedButton onClick={handleClick} sx={{ width: "90%" }}>
+              {" "}
+              Get Started{" "}
+            </RoundedButton>
+          </Box>
         </Box>
       </Box>
     </Container>

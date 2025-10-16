@@ -18,6 +18,13 @@ import { searchPatient } from "../../reducer/patientSlice";
 import { useNavigate } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
 import PatientHeaderTabs from "../../components/patientHeaderTabs";
+import usePatient from "../../hooks/usePatient";
+import { BORDER_RADIUS, ICON_SIZE } from "../../constant/lookUpConstant";
+import SemiBoldText from "../../components/typography/semiBoldText";
+import RegularText from "../../components/typography/regularText";
+import { ArrowBackIos } from "@mui/icons-material";
+import { IoIosArrowBack } from "react-icons/io";
+import RoundedIconButton from "../../components/button/roundedIconButton";
 
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -47,10 +54,18 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
-const Header = ({ drawerWidth, isSearch, isPatientView, toggleDrawer }) => {
+const Header = ({
+  title,
+  inSideMenu,
+  drawerWidth,
+  isSearch,
+  isPatientView,
+  toggleDrawer,
+}) => {
   const theme = useTheme();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { patient } = usePatient();
 
   const onChangeSearch = (value) => {
     dispatch(searchPatient({ value }));
@@ -58,87 +73,163 @@ const Header = ({ drawerWidth, isSearch, isPatientView, toggleDrawer }) => {
 
   const userData = useAuth();
 
+  const handleEditUser = () => {
+    navigate("/managePatient/basicDetails", {
+      state: {
+        from: "BasicDetails",
+        mode: "edit",
+        patientId: patient?.patientId,
+      },
+    });
+  };
+
   return (
     <AppBar
       position="fixed"
-      color="#fff"
       elevation={0}
       sx={{
         zIndex: (theme) => theme.zIndex.drawer + 1,
-        background: "#fff",
-        paddingX: 1,
+        background: theme.palette.primary.bg_head,
+        borderBottomLeftRadius: BORDER_RADIUS.XL,
+        borderBottomRightRadius: BORDER_RADIUS.XL,
+        paddingX: 0,
       }}
     >
       <Toolbar>
         <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            width: `calc(${drawerWidth}px - 16px)`,
-          }}
+          sx={{ flexGrow: 1, display: "flex", alignItems: "center", gap: 2 }}
         >
-          <IconButton size="large" edge="start" onClick={toggleDrawer}>
-            <MenuIcon />
-          </IconButton>
-          <Box>
-            <Typography variant="body1" sx={{ fontWeight: 600 }}>
-              {userData?.name ? `Hi, ${userData?.name}` : "Kokum Therapist"}
-            </Typography>
-            {userData?.clinicName && (
-              <Typography variant="body2" sx={{ fontWeight: 400 }}>
-                {userData?.clinicName}
-              </Typography>
-            )}
-          </Box>
-        </Box>
-
-        {isSearch && (
           <Box
             sx={{
               display: "flex",
               alignItems: "center",
+              width: `calc(${drawerWidth}px - 16px)`,
             }}
           >
-            <Search>
-              <SearchIconWrapper>
-                <SearchIcon />
-              </SearchIconWrapper>
-              <StyledInputBase
-                placeholder="Search…"
-                inputProps={{ "aria-label": "search" }}
-                autoFocus
-                onChange={(e) => onChangeSearch(e.target.value)}
-              />
-            </Search>
-            <IconButton
-              color="default"
-              sx={{
-                ml: 1,
-                border: `1px solid ${theme.palette.primary.main}`,
-              }}
-              onClick={() => navigate("/managePatient/basicDetails")}
-            >
-              <IoAdd color={theme.palette.primary.main} />
-            </IconButton>
+            {inSideMenu ? (
+              <RoundedIconButton
+                sx={{
+                  mr: 1,
+                }}
+                onClick={toggleDrawer}
+              >
+                <MenuIcon
+                  size={ICON_SIZE.MD}
+                  sx={{ color: theme.palette.primary.main }}
+                />
+              </RoundedIconButton>
+            ) : (
+              <RoundedIconButton
+                sx={{
+                  mr: 1,
+                }}
+                onClick={() => navigate(-1)}
+              >
+                <IoIosArrowBack
+                  color={theme.palette.primary.main}
+                  size={ICON_SIZE.MD}
+                />
+              </RoundedIconButton>
+            )}
+            <Box>
+              {!inSideMenu && title ? (
+                <SemiBoldText>{title}</SemiBoldText>
+              ) : (
+                <>
+                  <SemiBoldText>
+                    {userData?.name
+                      ? `Hi, ${userData?.name}`
+                      : "Kokum Therapist"}
+                  </SemiBoldText>
+                  {userData?.clinicName && (
+                    <RegularText>{userData?.clinicName}</RegularText>
+                  )}
+                </>
+              )}
+            </Box>
           </Box>
-        )}
 
-        {isPatientView && <PatientHeaderTabs />}
-        <Box sx={{ display: "flex", alignItems: "center", ml: "auto", gap: 2 }}>
-          <IconButton
-            color="default"
-            sx={{ ml: 1, border: `1px solid ${theme.palette.primary.main}` }}
-            onClick={() => navigate("/notifications")}
-          >
-            <FaBell color={theme.palette.primary.main} />
-          </IconButton>
-          <IconButton
-            color="default"
-            sx={{ ml: 1, border: `1px solid ${theme.palette.primary.main}` }}
-            onClick={() => navigate("/myProfile")}
-          >
-            <IoPerson color={theme.palette.primary.main} />
-          </IconButton>
+          {isSearch && (
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              <Search sx={{ backgroundColor: "#fff", boxShadow: 1 }}>
+                <SearchIconWrapper>
+                  <SearchIcon />
+                </SearchIconWrapper>
+                <StyledInputBase
+                  placeholder="Search…"
+                  inputProps={{ "aria-label": "search" }}
+                  autoFocus
+                  onChange={(e) => onChangeSearch(e.target.value)}
+                />
+              </Search>
+              <RoundedIconButton
+                sx={{
+                  ml: 1,
+                }}
+                onClick={() => navigate("/managePatient/basicDetails")}
+              >
+                <IoAdd color={theme.palette.primary.main} size={ICON_SIZE.MD} />
+              </RoundedIconButton>
+            </Box>
+          )}
+
+          {isPatientView && <PatientHeaderTabs />}
+        </Box>
+        <Box>
+          {!isPatientView ? (
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 2,
+              }}
+            >
+              <RoundedIconButton
+                sx={{
+                  ml: 1,
+                }}
+                onClick={() => navigate("/notifications")}
+              >
+                <FaBell
+                  color={theme.palette.primary.main}
+                  size={ICON_SIZE.MD}
+                />
+              </RoundedIconButton>
+              <RoundedIconButton
+                sx={{
+                  ml: 1,
+                }}
+                onClick={() => navigate("/myProfile")}
+              >
+                <IoPerson
+                  color={theme.palette.primary.main}
+                  size={ICON_SIZE.MD}
+                />
+              </RoundedIconButton>
+            </Box>
+          ) : (
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 2,
+              }}
+            >
+              <RoundedIconButton
+                sx={{
+                  ml: 1,
+                }}
+                onClick={handleEditUser}
+              >
+                <IoPerson color={theme.palette.primary.main} />
+              </RoundedIconButton>
+            </Box>
+          )}
         </Box>
       </Toolbar>
     </AppBar>

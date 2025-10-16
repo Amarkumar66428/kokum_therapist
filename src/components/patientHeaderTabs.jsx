@@ -1,5 +1,5 @@
 import React from "react";
-import { Tabs, Tab, Tooltip, useTheme } from "@mui/material";
+import { Tabs, Tab, useTheme } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 import { PersonOutlineOutlined } from "@mui/icons-material";
 import { appRouters } from "../router/router.config";
@@ -9,7 +9,7 @@ const PatientHeaderTabs = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const patientRoutes = appRouters.filter((r) => r.isPatientView && r.title);
+  const patientRoutes = appRouters.filter((r) => r.isPatientView && r.tabTitle);
 
   const activeIndex = patientRoutes.findIndex((r) =>
     location.pathname.startsWith(r.path)
@@ -22,49 +22,61 @@ const PatientHeaderTabs = () => {
       variant="scrollable"
       scrollButtons="auto"
       sx={{
-        minHeight: 56,
-        "& .MuiTab-root": {
-          textTransform: "none",
-          fontWeight: 400,
-          color: theme.palette.text.secondary,
-          minHeight: 56,
-          flexDirection: "column",
+        minHeight: "auto",
+        height: "auto",
+        p: 0,
+        "& .MuiTabs-root": { width: "100%" },
+        "& .MuiTabs-scroller": { width: "100%" },
+        "& .MuiTabs-flexContainer": {
           alignItems: "center",
-          px: 1,
-          mx: 0.5,
-          transition: "all 0.2s ease-in-out",
-          borderRadius: 4,
-          border: `1px solid transparent`,
+        },
+        "& .MuiTabs-indicator": {
+          display: "none",
+        },
+        "& .MuiTab-root": {
+          minHeight: "auto",
+          height: "auto",
+          py: 0.5,
+          px: 1.5,
+          color: theme.palette.text.secondary,
+          borderRadius: 50,
+          border: "1px solid transparent",
+          fontFamily: "regular",
+          textTransform: "none",
+          fontSize: 14,
+          lineHeight: 1.2,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
           "&:hover": {
             backgroundColor: theme.palette.action.hover,
           },
         },
         "& .Mui-selected": {
           color: theme.palette.primary.main,
-          fontWeight: 500,
           border: `1px solid ${theme.palette.primary.main}`,
-          backgroundColor: theme.palette.action.selected,
+          backgroundColor: theme.palette.secondary.main,
+          fontFamily: "semibold",
           "& .MuiTab-iconWrapper": {
             color: theme.palette.primary.main,
           },
         },
-        "& .MuiTabs-indicator": {
-          backgroundColor: "transparent",
+        "& .MuiTabs-list": {
+          justifyContent: "center",
         },
       }}
     >
-      {patientRoutes.map(({ title, icon: Icon }, index) => {
-        const RenderIcon = Icon || PersonOutlineOutlined;
+      {patientRoutes.map(({ tabTitle, icon: Icon }, index) => {
+        const RenderIcon = Icon;
 
         return (
-          <Tooltip key={title} title={title} placement="bottom">
-            <Tab
-              icon={<RenderIcon fontSize="small" />}
-              iconPosition="start"
-              label={title}
-              value={index}
-            />
-          </Tooltip>
+          <Tab
+            key={index}
+            icon={<RenderIcon fontSize="small" />}
+            label={tabTitle}
+            value={index}
+            disableRipple
+          />
         );
       })}
     </Tabs>

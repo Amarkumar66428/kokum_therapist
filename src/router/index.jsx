@@ -20,14 +20,21 @@ const AppRouter = () => {
         ({
           path,
           component,
+          title = "",
           isLayout = true,
+          inSideMenu = false,
           role,
           isSearch = false,
           isPatientView = false,
         }) => {
           const content = React.createElement(component);
           const wrappedContent = isLayout ? (
-            <AppLayout isSearch={isSearch} isPatientView={isPatientView}>
+            <AppLayout
+              title={title}
+              inSideMenu={inSideMenu}
+              isSearch={isSearch}
+              isPatientView={isPatientView}
+            >
               {content}
             </AppLayout>
           ) : (

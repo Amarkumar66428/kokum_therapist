@@ -110,26 +110,16 @@ export default function TherapyHistoryPage() {
   const [, ...rest] = sessions;
 
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: "#F7F8FC" }}>
+    <Container
+      maxWidth="lg"
+      sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
+    >
       <AppBar
-        position="sticky"
-        color="inherit"
+        position="static"
+        color="transparent"
         elevation={0}
-        sx={{
-          boxShadow: "none",
-          borderRadius: 2,
-        }}
+        sx={{ width: "50%" }}
       >
-        <Toolbar disableGutters sx={{ px: 2, gap: 1 }}>
-          <IconButton onClick={() => navigate(-1)}>
-            <ArrowBackIosNewOutlined />
-          </IconButton>
-          <Typography>Sessions History</Typography>
-          <Box sx={{ ml: "auto" }} />
-        </Toolbar>
-      </AppBar>
-
-      <Container maxWidth="sm" sx={{ py: 2.5 }}>
         <ChildDetailCard
           childData={{
             name: patient?.patientName,
@@ -138,102 +128,98 @@ export default function TherapyHistoryPage() {
             caretakerName: patient?.caretakerName,
           }}
         />
+      </AppBar>
 
-        {/* Refresh control alternative */}
-        <Stack direction="row" justifyContent="flex-end" sx={{ mb: 1 }}>
-          <Button
-            variant="text"
-            size="small"
-            onClick={handleRefresh}
-            disabled={refreshing}
-          >
-            {refreshing ? "Refreshing..." : "Refresh"}
-          </Button>
+      {/* Refresh control alternative */}
+      <Stack direction="row" justifyContent="flex-end" sx={{ mb: 1 }}>
+        <Button
+          variant="text"
+          size="small"
+          onClick={handleRefresh}
+          disabled={refreshing}
+        >
+          {refreshing ? "Refreshing..." : "Refresh"}
+        </Button>
+      </Stack>
+
+      {loading ? (
+        <Stack alignItems="center" sx={{ pt: 5 }}>
+          <CircularProgress size={36} sx={{ color: "#082878" }} />
+          <Typography sx={{ mt: 1, color: "#082878" }}>Loading…</Typography>
         </Stack>
-
-        {loading ? (
-          <Stack alignItems="center" sx={{ pt: 5 }}>
-            <CircularProgress size={36} sx={{ color: "#082878" }} />
-            <Typography sx={{ mt: 1, color: "#082878" }}>Loading…</Typography>
-          </Stack>
-        ) : rest.length === 0 ? (
-          <Box sx={{ pt: 5, textAlign: "center" }}>
-            <Typography
-              sx={{ color: "#0A1F44", fontSize: 16, fontWeight: 600 }}
-            >
-              No therapy plan found for this child.
+      ) : rest.length === 0 ? (
+        <Box sx={{ pt: 5, textAlign: "center" }}>
+          <Typography sx={{ color: "#0A1F44", fontSize: 16, fontWeight: 600 }}>
+            No therapy plan found for this child.
+          </Typography>
+          {!!errorMsg && (
+            <Typography sx={{ mt: 0.75, color: "#CC3344" }}>
+              {errorMsg}
             </Typography>
-            {!!errorMsg && (
-              <Typography sx={{ mt: 0.75, color: "#CC3344" }}>
-                {errorMsg}
-              </Typography>
-            )}
-          </Box>
-        ) : (
-          rest.map((s) => (
-            <Card
-              key={s.id}
-              variant="outlined"
-              sx={{
-                mt: 2.25,
-                borderRadius: 2,
-                borderColor: "#EEF2FF",
-                bgcolor: "#FFFFFF",
-                // subtle elevation parity
-                boxShadow: { xs: "0px 6px 10px rgba(0,0,0,0.06)" },
-              }}
-            >
-              <CardContent sx={{ p: 2.25, pr: 2 }}>
-                <Stack direction="row" alignItems="flex-start">
-                  <Box sx={{ flex: 1, pr: 1.5 }}>
-                    <Typography
-                      sx={{
-                        fontSize: 16,
-                        fontWeight: 800,
-                        color: "#0A1F44",
-                        mb: 0.75,
-                      }}
-                    >
-                      {formatLongDate(s.dateISO)}
-                    </Typography>
-                    <Typography
-                      sx={{ fontSize: 14, color: "#0A1F44", mb: 1.25 }}
-                    >
-                      {s.start} – {s.end}
-                    </Typography>
-                    {/* <Typography sx={{ fontSize: 14, fontWeight: 700, color: "#FF5A82" }}>
-                      {s.type}
-                    </Typography> */}
-                  </Box>
-
-                  <Button
-                    variant="contained"
-                    disableElevation
-                    onClick={() =>
-                      navigate && navigate("TherapyPlanView", { planId: s.id })
-                    }
+          )}
+        </Box>
+      ) : (
+        rest.map((s) => (
+          <Card
+            key={s.id}
+            variant="outlined"
+            sx={{
+              mt: 2.25,
+              borderRadius: 2,
+              borderColor: "#EEF2FF",
+              bgcolor: "#FFFFFF",
+              // subtle elevation parity
+              boxShadow: { xs: "0px 6px 10px rgba(0,0,0,0.06)" },
+            }}
+          >
+            <CardContent sx={{ p: 2.25, pr: 2 }}>
+              <Stack direction="row" alignItems="flex-start">
+                <Box sx={{ flex: 1, pr: 1.5 }}>
+                  <Typography
                     sx={{
-                      textTransform: "none",
-                      borderRadius: 14,
-                      py: 1,
-                      px: 2.25,
-                      bgcolor: "#EEF4FF",
-                      color: "#0A1F44",
+                      fontSize: 16,
                       fontWeight: 800,
-                      boxShadow: "none",
-                      "&:hover": { bgcolor: "#E2EBFF", boxShadow: "none" },
+                      color: "#0A1F44",
+                      mb: 0.75,
                     }}
                   >
-                    View
-                  </Button>
-                </Stack>
-              </CardContent>
-            </Card>
-          ))
-        )}
+                    {formatLongDate(s.dateISO)}
+                  </Typography>
+                  <Typography sx={{ fontSize: 14, color: "#0A1F44", mb: 1.25 }}>
+                    {s.start} – {s.end}
+                  </Typography>
+                  {/* <Typography sx={{ fontSize: 14, fontWeight: 700, color: "#FF5A82" }}>
+                      {s.type}
+                    </Typography> */}
+                </Box>
 
-        <Box sx={{ height: 12 }} />
-      </Container>
-    </Box>
+                <Button
+                  variant="contained"
+                  disableElevation
+                  onClick={() =>
+                    navigate && navigate("TherapyPlanView", { planId: s.id })
+                  }
+                  sx={{
+                    textTransform: "none",
+                    borderRadius: 14,
+                    py: 1,
+                    px: 2.25,
+                    bgcolor: "#EEF4FF",
+                    color: "#0A1F44",
+                    fontWeight: 800,
+                    boxShadow: "none",
+                    "&:hover": { bgcolor: "#E2EBFF", boxShadow: "none" },
+                  }}
+                >
+                  View
+                </Button>
+              </Stack>
+            </CardContent>
+          </Card>
+        ))
+      )}
+
+      <Box sx={{ height: 12 }} />
+    </Container>
   );
 }

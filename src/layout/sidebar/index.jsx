@@ -7,12 +7,15 @@ import {
   Toolbar,
   Tooltip,
   Box,
+  Typography,
 } from "@mui/material";
 import { LogoutOutlined, PersonOutlineOutlined } from "@mui/icons-material";
 import { appRouters } from "../../router/router.config";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
 import ConfirmDialog from "../../components/confirmDialog";
+import { FONT_SIZE, ICON_SIZE } from "../../constant/lookUpConstant";
+import SemiBoldText from "../../components/typography/semiBoldText";
 
 const SideBar = ({ open, drawerWidth, miniDrawerWidth }) => {
   const navigate = useNavigate();
@@ -65,9 +68,8 @@ const SideBar = ({ open, drawerWidth, miniDrawerWidth }) => {
                       mx: 1,
                       my: 0.5,
                       "&.Mui-selected": {
-                        bgcolor: "gray.100",
+                        bgcolor: "primary.hlt_light",
                         color: "primary.main",
-                        "& .MuiSvgIcon-root": { color: "primary.main" },
                       },
                       "&:hover": {
                         bgcolor: "action.hover",
@@ -75,9 +77,16 @@ const SideBar = ({ open, drawerWidth, miniDrawerWidth }) => {
                     }}
                   >
                     <ListItemIcon sx={{ minWidth: 40 }}>
-                      <RenderIcon />
+                      <RenderIcon
+                        sx={{ color: "primary.icon", fontSize: ICON_SIZE.MD }}
+                      />
                     </ListItemIcon>
-                    {open && <ListItemText primary={title} />}
+                    {open && (
+                      <ListItemText
+                        disableTypography
+                        primary={<SemiBoldText>{title}</SemiBoldText>}
+                      />
+                    )}
                   </ListItemButton>
                 </Tooltip>
               );
@@ -94,16 +103,27 @@ const SideBar = ({ open, drawerWidth, miniDrawerWidth }) => {
               mx: 1,
               mb: 1,
               "&:hover": {
-                bgcolor: "error.light",
-                color: "#fff",
-                "& .MuiSvgIcon-root": { color: "error.main" },
+                bgcolor: "secondary.light_error",
+                color: "secondary.error",
+                "& .MuiSvgIcon-root": { color: "secondary.error" },
               },
             }}
           >
             <ListItemIcon sx={{ minWidth: 40 }}>
-              <LogoutOutlined />
+              <LogoutOutlined
+                sx={{ color: "primary.icon", fontSize: ICON_SIZE.MD }}
+              />
             </ListItemIcon>
-            {open && <ListItemText primary="Logout" />}
+            {open && (
+              <ListItemText
+                disableTypography
+                primary={
+                  <Typography fontSize={FONT_SIZE.BODY} fontFamily="semiBold">
+                    Logout
+                  </Typography>
+                }
+              />
+            )}
           </ListItemButton>
         </Tooltip>
       </List>

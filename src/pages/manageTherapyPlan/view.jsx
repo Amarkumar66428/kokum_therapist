@@ -18,6 +18,9 @@ import usePatient from "../../hooks/usePatient";
 import patientService from "../../services/patientService";
 import ChildDetailCard from "../../components/childDetailCard";
 import { useNavigate, useParams } from "react-router-dom";
+import SemiBoldText from "../../components/typography/semiBoldText";
+import RegularText from "../../components/typography/regularText";
+import { AttachFile } from "@mui/icons-material";
 
 const formatLongDate = (iso) =>
   iso
@@ -34,11 +37,9 @@ export default function TherapyPlanViewPage() {
   const navigate = useNavigate();
   const { patient } = usePatient();
 
-  const patientId = patient?.patientId;
+  const patientId = patient?.patientCode;
 
   const [plan, setPlan] = useState(null);
-  const [showShortComment, setShowShortComment] = useState(false);
-  const [showLongComment, setShowLongComment] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -73,24 +74,23 @@ export default function TherapyPlanViewPage() {
     : "—";
 
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: "#f9f9fb" }}>
-      <AppBar
-        position="sticky"
-        color="inherit"
-        elevation={0}
-        sx={{
-          boxShadow: "none",
-          borderRadius: 2,
-        }}
-      >
-        <Toolbar sx={{ px: 2 }}>
-          <Typography>
-            {planId ? "Therapy Plan (History)" : "Last Therapy Plan"}
-          </Typography>
+    <Container maxWidth="lg">
+      <AppBar position="static" color="transparent" elevation={0}>
+        <Box sx={{ width: "50%", mx: "auto" }}>
+          <ChildDetailCard
+            childData={{
+              name: patient?.patientName,
+              age: patient?.patientAge,
+              gender: patient?.patientGender,
+              caretakerName: patient?.caretakerName,
+            }}
+          />
+
           <Box
             sx={{
-              ml: "auto",
               display: "flex",
+              flexDirection: "row",
+              justifyContent: "flex-end",
               alignItems: "center",
               gap: 1.25,
             }}
@@ -100,384 +100,210 @@ export default function TherapyPlanViewPage() {
               onClick={() => navigate("/therapyPlans/last")}
               color="primary"
             >
-              <AddTaskIcon sx={{ color: "#032E8A" }} />
+              <AddTaskIcon sx={{ color: "primary.icon" }} />
             </IconButton>
             <IconButton
               aria-label="open therapy history"
               onClick={() => navigate("/therapyPlans/history")}
               color="primary"
             >
-              <HistoryIcon sx={{ color: "#032E8A" }} />
+              <HistoryIcon sx={{ color: "primary.icon" }} />
             </IconButton>
           </Box>
-        </Toolbar>
+        </Box>
       </AppBar>
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
 
-      <Container
-        maxWidth="sm"
-        sx={{ display: "flex", flexDirection: "column", py: 2.5, gap: 2 }}
-      >
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-        )}
-
-        <ChildDetailCard
-          childData={{
-            name: patient?.patientName,
-            age: patient?.patientAge,
-            gender: patient?.patientGender,
-            caretakerName: patient?.caretakerName,
+      {loading ? (
+        <Stack spacing={2}>
+          <Skeleton variant="text" width={60} height={20} />
+          <Skeleton variant="rounded" height={60} />
+          <Skeleton variant="text" width={60} height={20} />
+          <Skeleton variant="rounded" height={100} />
+          <Skeleton variant="text" width={60} height={20} />
+          <Skeleton variant="rounded" height={60} />
+          <Skeleton variant="text" width={60} height={20} />
+          <Skeleton variant="rounded" height={150} />
+        </Stack>
+      ) : !plan ? (
+        <Box
+          sx={{
+            p: 2.5,
+            textAlign: "center",
           }}
-        />
-
-        {loading ? (
-          <Stack spacing={2}>
-            <Skeleton variant="text" width={60} height={20} />
-            <Skeleton variant="rounded" height={60} />
-            <Skeleton variant="text" width={60} height={20} />
-            <Skeleton variant="rounded" height={100} />
-            <Skeleton variant="text" width={60} height={20} />
-            <Skeleton variant="rounded" height={60} />
-            <Skeleton variant="text" width={60} height={20} />
-            <Skeleton variant="rounded" height={150} />
+        >
+          <SemiBoldText>No last therapy plan found</SemiBoldText>
+          <Button
+            variant="text"
+            onClick={() => navigate("/therapyPlans/last")}
+            startIcon={<AddTaskIcon sx={{ color: "#032E8A" }} />}
+            sx={{ color: "#000", fontWeight: 500 }}
+          >
+            Add New Therapy Plan
+          </Button>
+        </Box>
+      ) : (
+        <Stack spacing={2.5}>
+          {/* Date & Time */}
+          <Stack spacing={1}>
+            <SemiBoldText>Date & Time</SemiBoldText>
+            <Box
+              sx={{
+                bgcolor: "#fff",
+                borderRadius: 1.5,
+                p: 1.25,
+                border: "1px solid #EEF2FF",
+              }}
+            >
+              <RegularText color="text.secondary">{planDate}</RegularText>
+              <RegularText color="text.secondary">
+                {(plan?.startTime || "—") + " - " + (plan?.endTime || "—")}
+              </RegularText>
+            </Box>
           </Stack>
-        ) : !plan ? (
+
+          {/* Therapy Notes */}
+          <Stack spacing={1}>
+            <SemiBoldText>Therapy Notes</SemiBoldText>
+            <Box
+              sx={{
+                minHeight: 100,
+                bgcolor: "#fff",
+                borderRadius: 1.5,
+                p: 1.25,
+                border: "1px solid #EEF2FF",
+              }}
+            >
+              <RegularText color="text.secondary">
+                {plan?.therapyNotes || "—"}
+              </RegularText>
+            </Box>
+          </Stack>
+
+          {/* Short-term goals */}
+          <SemiBoldText>Gaols</SemiBoldText>
           <Box
             sx={{
-              p: 2.5,
-              textAlign: "center",
+              bgcolor: "#fff",
+              borderRadius: 1.5,
+              p: 1.75,
+              border: "1px solid #EEF2FF",
             }}
           >
-            <Typography variant="body1" color="#4B5563" sx={{ mb: 1.5 }}>
-              No last therapy plan found
-            </Typography>
-            <Button
-              variant="text"
-              onClick={() => navigate && navigate("TherapyPlanMain")}
-              startIcon={<AddTaskIcon sx={{ color: "#032E8A" }} />}
-              sx={{ color: "#000", fontWeight: 500 }}
+            <SemiBoldText>Short- Term Goals</SemiBoldText>
+            <RegularText
+              color="text.secondary"
+              sx={{ backgroundColor: "#fafafa", p: 1, borderRadius: 1 }}
             >
-              Add New Therapy Plan
-            </Button>
+              {plan?.shortTermGoals || "—"}
+            </RegularText>
+
+            <SemiBoldText>Comment</SemiBoldText>
+
+            <RegularText
+              color="text.secondary"
+              sx={{ backgroundColor: "#fafafa", p: 1, borderRadius: 1 }}
+            >
+              {plan?.shortTermComments || "—"}
+            </RegularText>
           </Box>
-        ) : (
-          <Stack spacing={2.5}>
-            {/* Date & Time */}
-            <Stack spacing={1}>
-              <Typography
-                sx={{ fontSize: 15, fontWeight: 700, color: "#082878" }}
-              >
-                Date & Time
-              </Typography>
-              <Box
-                sx={{
-                  bgcolor: "#fff",
-                  borderRadius: 1.5,
-                  p: 1.25,
-                  border: "1px solid #EEF2FF",
-                }}
-              >
-                <Typography
-                  sx={{
-                    fontSize: 16,
-                    fontWeight: 700,
-                    color: "#1E293B",
-                    mb: 0.5,
-                  }}
-                >
-                  {planDate}
-                </Typography>
-                <Typography
-                  sx={{ fontSize: 14, fontWeight: 600, color: "#64748B" }}
-                >
-                  {(plan?.startTime || "—") + " - " + (plan?.endTime || "—")}
-                </Typography>
-              </Box>
-            </Stack>
 
-            {/* Therapy Notes */}
-            <Stack spacing={1}>
-              <Typography sx={{ fontSize: 16, fontWeight: 600, color: "#333" }}>
-                Therapy Notes
-              </Typography>
-              <Box
-                sx={{
-                  minHeight: 100,
-                  bgcolor: "#fff",
-                  borderRadius: 1.5,
-                  p: 1.25,
-                  border: "1px solid #EEF2FF",
-                }}
-              >
-                <Typography
-                  sx={{ fontSize: 14, color: "#333", whiteSpace: "pre-wrap" }}
-                >
-                  {plan?.therapyNotes || "—"}
-                </Typography>
-              </Box>
-            </Stack>
+          {/* Long-term goals */}
+          <Box
+            sx={{
+              bgcolor: "#fff",
+              borderRadius: 1.5,
+              p: 1.75,
+              border: "1px solid #EEF2FF",
+            }}
+          >
+            <SemiBoldText>Long- Term Goals</SemiBoldText>
 
-            {/* Short-term goals */}
-            <Box
-              sx={{
-                bgcolor: "#fff",
-                borderRadius: 1.5,
-                p: 1.75,
-                border: "1px solid #EEF2FF",
-              }}
+            <RegularText
+              color="text.secondary"
+              sx={{ backgroundColor: "#fafafa", p: 1, borderRadius: 1 }}
             >
-              <Typography
-                sx={{
-                  fontSize: 14,
-                  fontWeight: 700,
-                  color: "#002F8D",
-                  mb: 0.75,
-                }}
-              >
-                Short- Term Goals
-              </Typography>
-              <Typography
-                sx={{
-                  fontSize: 14,
-                  color: "#333",
-                  mb: 1.25,
-                  whiteSpace: "pre-wrap",
-                }}
-              >
-                {plan?.shortTermGoals || "—"}
-              </Typography>
-
-              <Button
-                variant="text"
-                size="small"
-                onClick={() => setShowShortComment((s) => !s)}
-                sx={{
-                  color: "#F72485",
-                  fontWeight: 600,
-                  px: 0,
-                  alignSelf: "flex-start",
-                }}
-              >
-                {showShortComment ? "Hide Comment" : "Show Comment"}
-              </Button>
-
-              {showShortComment && (
-                <Box
-                  sx={{
-                    mt: 1.25,
-                    bgcolor: "#fff",
-                    border: "1px solid #EEFBFD",
-                    borderRadius: 1,
-                    p: 1.5,
-                  }}
-                >
-                  <Typography
-                    sx={{ fontSize: 14, color: "#333", whiteSpace: "pre-wrap" }}
-                  >
-                    {plan?.shortTermComments || "—"}
-                  </Typography>
-                </Box>
-              )}
-            </Box>
-
-            {/* Long-term goals */}
-            <Box
-              sx={{
-                bgcolor: "#fff",
-                borderRadius: 1.5,
-                p: 1.75,
-                border: "1px solid #EEF2FF",
-              }}
+              {plan?.longTermGoals || "—"}
+            </RegularText>
+            <SemiBoldText>Show Comment</SemiBoldText>
+            <RegularText
+              color="text.secondary"
+              sx={{ backgroundColor: "#fafafa", p: 1, borderRadius: 1 }}
             >
-              <Typography
-                sx={{
-                  fontSize: 14,
-                  fontWeight: 700,
-                  color: "#002F8D",
-                  mb: 0.75,
-                }}
-              >
-                Long- Term Goals
-              </Typography>
-              <Typography
-                sx={{
-                  fontSize: 14,
-                  color: "#333",
-                  mb: 1.25,
-                  whiteSpace: "pre-wrap",
-                }}
-              >
-                {plan?.longTermGoals || "—"}
-              </Typography>
+              {plan?.longTermComments || "—"}
+            </RegularText>
+          </Box>
 
-              <Button
-                variant="text"
-                size="small"
-                onClick={() => setShowLongComment((s) => !s)}
-                sx={{
-                  color: "#F72485",
-                  fontWeight: 600,
-                  px: 0,
-                  alignSelf: "flex-start",
-                }}
-              >
-                {showLongComment ? "Hide Comment" : "Show Comment"}
-              </Button>
-
-              {showLongComment && (
-                <Box
-                  sx={{
-                    mt: 1.25,
-                    bgcolor: "#fff",
-                    border: "1px solid #EEFBFD",
-                    borderRadius: 1,
-                    p: 1.5,
-                  }}
-                >
-                  <Typography
-                    sx={{ fontSize: 14, color: "#333", whiteSpace: "pre-wrap" }}
-                  >
-                    {plan?.longTermComments || "—"}
-                  </Typography>
-                </Box>
-              )}
-            </Box>
-
-            {/* Home Care Plan list */}
-            <Stack
-              direction="row"
-              alignItems="center"
-              justifyContent="space-between"
-            >
-              <Typography sx={{ fontSize: 16, fontWeight: 600, color: "#000" }}>
-                Home Care Plan
-              </Typography>
-            </Stack>
-
-            {(plan?.homeCarePlans || []).map((hp, idx) => (
-              <Box
-                key={idx}
-                sx={{
-                  p: 1.75,
-                  bgcolor: "#F6F9FF",
-                  borderRadius: 1.5,
-                  border: "1px solid #EEF2FF",
-                }}
-              >
-                <Typography
-                  sx={{
-                    fontSize: 16,
-                    fontWeight: 600,
-                    color: "#000",
-                    mb: 0.75,
-                  }}
-                >
-                  Title
-                </Typography>
-                <Box
-                  sx={{
-                    fontSize: 14,
-                    border: "1px solid #EEFBFD",
-                    borderRadius: 1,
-                    p: 1.25,
-                    mb: 1,
-                    bgcolor: "#fff",
-                  }}
-                >
-                  {hp.title || "—"}
-                </Box>
-
-                <Typography
-                  sx={{
-                    fontSize: 16,
-                    fontWeight: 600,
-                    color: "#000",
-                    mb: 0.75,
-                  }}
-                >
-                  Assigned Category
-                </Typography>
-                <Box
-                  sx={{
-                    fontSize: 14,
-                    border: "1px solid #EEFBFD",
-                    borderRadius: 1,
-                    p: 1.25,
-                    mb: 1,
-                    bgcolor: "#fff",
-                  }}
-                >
-                  {hp.assignedCategory || "—"}
-                </Box>
-
-                <Typography
-                  sx={{
-                    fontSize: 16,
-                    fontWeight: 600,
-                    color: "#000",
-                    mb: 0.75,
-                  }}
-                >
-                  Instructions
-                </Typography>
-                <Box
-                  sx={{
-                    fontSize: 14,
-                    border: "1px solid #EEFBFD",
-                    borderRadius: 1,
-                    p: 1.25,
-                    mb: 1,
-                    bgcolor: "#fff",
-                    whiteSpace: "pre-wrap",
-                  }}
-                >
-                  {hp.instructions || "—"}
-                </Box>
-
-                <Typography
-                  sx={{
-                    fontSize: 16,
-                    fontWeight: 600,
-                    color: "#000",
-                    mb: 0.75,
-                  }}
-                >
-                  Attach Reference
-                </Typography>
-                <Box
-                  sx={{
-                    bgcolor: "#EFF9FD",
-                    p: 1.25,
-                    borderRadius: 1,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <Typography
-                    noWrap
-                    sx={{
-                      fontSize: 14,
-                      color: "#032E8A",
-                      fontWeight: 600,
-                      mr: 1,
-                      maxWidth: "80%",
-                    }}
-                  >
-                    {hp.reference
-                      ? hp.reference.name || "Attached"
-                      : "Attach Reference"}
-                  </Typography>
-                  {/* paperclip visual via unicode or icon; MUI doesn't have Feather directly */}
-                  <span style={{ color: "#032E8A", fontSize: 18 }}>📎</span>
-                </Box>
-              </Box>
-            ))}
+          {/* Home Care Plan list */}
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+          >
+            <SemiBoldText>Home Care Plan</SemiBoldText>
           </Stack>
-        )}
-      </Container>
-    </Box>
+
+          {(plan?.homeCarePlans || []).map((hp, idx) => (
+            <Box
+              key={idx}
+              sx={{
+                p: 1.75,
+                bgcolor: "#F6F9FF",
+                borderRadius: 1.5,
+                border: "1px solid #EEF2FF",
+              }}
+            >
+              <SemiBoldText>Title</SemiBoldText>
+              <RegularText
+                color="text.secondary"
+                sx={{ backgroundColor: "#fafafa", p: 1, borderRadius: 1 }}
+              >
+                {hp.title || "—"}
+              </RegularText>
+
+              <SemiBoldText>Assigned Category</SemiBoldText>
+              <RegularText
+                color="text.secondary"
+                sx={{ backgroundColor: "#fafafa", p: 1, borderRadius: 1 }}
+              >
+                {hp.assignedCategory || "—"}
+              </RegularText>
+
+              <SemiBoldText>Instructions</SemiBoldText>
+              <RegularText
+                color="text.secondary"
+                sx={{ backgroundColor: "#fafafa", p: 1, borderRadius: 1 }}
+              >
+                {hp.instructions || "—"}
+              </RegularText>
+
+              <SemiBoldText>Attach Reference</SemiBoldText>
+              <Box
+                sx={{
+                  bgcolor: "#EFF9FD",
+                  p: 1.25,
+                  borderRadius: 1,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <RegularText color="text.secondary">
+                  {hp.reference
+                    ? hp.reference.name || "Attached"
+                    : "Attach Reference"}
+                </RegularText>
+                {/* paperclip visual via unicode or icon; MUI doesn't have Feather directly */}
+                <AttachFile sx={{ color: "primary.icon" }} />
+              </Box>
+            </Box>
+          ))}
+        </Stack>
+      )}
+    </Container>
   );
 }

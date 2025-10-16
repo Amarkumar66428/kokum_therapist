@@ -25,11 +25,6 @@ import {
   InputAdornment,
   Skeleton,
   CircularProgress,
-  Modal,
-  Fade,
-  Backdrop,
-  Button,
-  useMediaQuery,
   Alert,
 } from "@mui/material";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
@@ -42,17 +37,26 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
 import suggestionService from "../../services/suggestions";
 import renderFormattedText from "../../components/aiResponse";
+import SemiBoldText from "../../components/typography/semiBoldText";
+import RegularText from "../../components/typography/regularText";
+import { FONT_SIZE } from "../../constant/lookUpConstant";
+import SuggestionDetails from "../../components/suggestionDetails";
+import NormalInput from "../../components/input/normalInput";
 
 const PAGE_SIZE = 10;
-
-const capitalize = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : "");
-const formatToDateAndTime = (date) =>
-  date ? dayjs(date).format("MMM D, YYYY • h:mm A") : "N/A";
 
 export default function SuggestionsListPage() {
   const [activeTab, setActiveTab] = useState("daily"); // "daily" | "specific"
   const [selectedDate, setSelectedDate] = useState(dayjs());
   const [suggestions, setSuggestions] = useState([]);
+
+  const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [error, setError] = useState(null);
+
+  const [commentDrafts, setCommentDrafts] = useState({});
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [detailData, setDetailData] = useState(null);
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -60,19 +64,8 @@ export default function SuggestionsListPage() {
     hasNextPage: false,
     hasPrevPage: false,
   });
-  const [loading, setLoading] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [error, setError] = useState(null);
-
-  const [openCommentForId, setOpenCommentForId] = useState(null);
-  const [commentDrafts, setCommentDrafts] = useState({});
-  const [showFeedbackForId, setShowFeedbackForId] = useState(null);
-
-  const [detailOpen, setDetailOpen] = useState(false);
-  const [detailData, setDetailData] = useState(null);
 
   const sentinelRef = useRef(null);
-  const isSmall = useMediaQuery("(max-width:600px)");
 
   const queryKey = useMemo(
     () => `${activeTab}_${selectedDate.format("YYYY-MM-DD")}`,
@@ -160,23 +153,13 @@ export default function SuggestionsListPage() {
     setDetailData(null);
   };
 
-  const handleToggleCommentBox = (id) => {
-    setOpenCommentForId((prev) => (prev === id ? null : id));
-  };
-
-  const handleToggleFeedback = (id) => {
-    setShowFeedbackForId((prev) => (prev === id ? null : id));
-  };
-
   const handleAddFeedback = async (id) => {
     const text = (commentDrafts[id] || "").trim();
     if (!text) return;
 
-    setOpenCommentForId(null);
     setSuggestions((prev) =>
       prev.map((s) => (s._id === id ? { ...s, feedback: text } : s))
     );
-    setShowFeedbackForId(id);
 
     try {
       await suggestionService.addFeedback(id, text);
@@ -217,54 +200,58 @@ export default function SuggestionsListPage() {
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <AppBar
         position="sticky"
-        color="inherit"
         elevation={0}
         sx={{
+          backgroundColor: "background.default",
           boxShadow: "none",
           borderRadius: 2,
         }}
       >
-        <Toolbar sx={{ gap: 2 }}>
-          <Typography>AI Suggestions</Typography>
-        </Toolbar>
-      </AppBar>
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          pt: 2,
-          borderBottom: "1px solid #e0e0e0",
-        }}
-      >
-        <Tabs
-          value={activeTab}
-          onChange={handleTabChange}
-          variant="scrollable"
-          allowScrollButtonsMobile
-          aria-label="suggestion type tabs"
-          sx={{ px: 2 }}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            borderBottom: "1px solid #e0e0e0",
+          }}
         >
-          <Tab value="daily" label="Daily Suggestions" />
-          <Tab value="specific" label="Specific Suggestions" />
-        </Tabs>
-        <Box sx={{ ml: "auto", display: "flex", alignItems: "center", gap: 1 }}>
-          <DatePicker
-            value={selectedDate}
-            onChange={(v) => v && setSelectedDate(v)}
-            format="MMM D, YYYY"
-            slotProps={{
-              textField: {
-                size: "small",
-                sx: { minWidth: 170, bgcolor: "background.paper" },
+          <Tabs
+            value={activeTab}
+            onChange={handleTabChange}
+            variant="scrollable"
+            scrollButtons="auto"
+            sx={{
+              borderBottom: "1px solid #e0e0e0",
+              "& .MuiTab-root": {
+                textTransform: "none",
+                fontFamily: "regular",
               },
+              "& .Mui-selected": { fontFamily: "semibold" },
             }}
-          />
+          >
+            <Tab value="daily" label="Daily Suggestions" />
+            <Tab value="specific" label="Specific Suggestions" />
+          </Tabs>
+          <Box
+            sx={{ ml: "auto", display: "flex", alignItems: "center", gap: 1 }}
+          >
+            <DatePicker
+              value={selectedDate}
+              onChange={(v) => v && setSelectedDate(v)}
+              format="MMM D, YYYY"
+              sx={{
+                fontSize: 12,
+                "& .MuiPickersInputBase-sectionsContainer": {
+                  padding: 1.5,
+                },
+              }}
+            />
+          </Box>
         </Box>
-      </Box>
+      </AppBar>
 
       <Container maxWidth="md" sx={{ py: 3 }}>
         {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
+          <Alert severity="error" sx={{ mb: 2, fontFamily: "regular" }}>
             {error}
           </Alert>
         )}
@@ -274,12 +261,8 @@ export default function SuggestionsListPage() {
             variant="outlined"
             sx={{ p: 3, textAlign: "center", borderRadius: 2 }}
           >
-            <Typography variant="h6" fontWeight={700}>
-              No suggestions found
-            </Typography>
-            <Typography color="text.secondary">
-              Try switching tabs or check back later
-            </Typography>
+            <SemiBoldText>No suggestions found</SemiBoldText>
+            <RegularText>Try switching tabs or check back later</RegularText>
           </Card>
         )}
 
@@ -289,8 +272,6 @@ export default function SuggestionsListPage() {
           suggestions.map((item) => {
             const child = item.childProfile || {};
             const genderShort = child.gender?.charAt(0)?.toUpperCase();
-            const commentOpen = openCommentForId === item._id;
-            const feedbackOpen = showFeedbackForId === item._id;
 
             return (
               <Card
@@ -306,24 +287,22 @@ export default function SuggestionsListPage() {
               >
                 <CardHeader
                   titleTypographyProps={{
-                    variant: "subtitle1",
-                    fontWeight: 600,
+                    fontFamily: "semibold",
+                    fontSize: FONT_SIZE.TITLE,
                   }}
                   title={child.name || "Unknown Child"}
                   action={
                     <Box sx={{ display: "flex", alignItems: "center" }}>
-                      <Typography>
+                      <SemiBoldText sx={{ fontSize: FONT_SIZE.BODY }}>
                         {child.age && child.gender
                           ? `${child.age} yr / ${genderShort}`
                           : undefined}
-                      </Typography>
+                      </SemiBoldText>
                       <IconButton
-                        size="small"
-                        color="primary"
                         onClick={() => handleOpenDetail(item)}
                         aria-label="open suggestion"
                       >
-                        <ChevronRightIcon />
+                        <ChevronRightIcon fontSize="small" />
                       </IconButton>
                     </Box>
                   }
@@ -332,9 +311,7 @@ export default function SuggestionsListPage() {
                 <CardContent sx={{ pt: 0 }}>
                   {child.therapyType && (
                     <Box sx={{ mb: 1.5 }}>
-                      <Typography variant="caption" color="text.secondary">
-                        Therapy Type
-                      </Typography>
+                      <SemiBoldText>Therapy Type</SemiBoldText>
                       <Box
                         sx={{
                           mt: 0.5,
@@ -350,13 +327,9 @@ export default function SuggestionsListPage() {
                           alignItems="center"
                           justifyContent="space-between"
                         >
-                          <Typography
-                            variant="body2"
-                            fontWeight={700}
-                            color="success.dark"
-                          >
+                          <RegularText color="success.dark">
                             {child.therapyType}
-                          </Typography>
+                          </RegularText>
                           <Chip
                             size="small"
                             label={`#${
@@ -381,108 +354,62 @@ export default function SuggestionsListPage() {
                     flexWrap="wrap"
                     gap={1}
                   >
-                    <Typography
-                      variant="caption"
-                      sx={{ color: "error.main", fontWeight: 700 }}
-                    >
+                    <RegularText color="secondary.error">
                       This suggestion is purely based out of AI
-                    </Typography>
+                    </RegularText>
                     <Stack direction="row" gap={1}>
                       <IconButton
-                        size="small"
-                        onClick={() => handleToggleFeedback(item._id)}
-                        aria-label="toggle feedback"
-                      >
-                        <ChatBubbleOutlineIcon fontSize="small" />
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        color="secondary"
                         onClick={() => handleOpenDetail(item)}
                         aria-label="open metadata"
+                        sx={{ color: "primary.icon" }}
                       >
-                        <InfoOutlinedIcon fontSize="small" />
+                        <InfoOutlinedIcon />
                       </IconButton>
                     </Stack>
                   </Stack>
 
-                  {!commentOpen && (
-                    <Button
-                      variant="text"
-                      size="small"
-                      sx={{ mt: 1 }}
-                      onClick={() => handleToggleCommentBox(item._id)}
-                    >
-                      Add Comment
-                    </Button>
-                  )}
-
-                  {commentOpen && (
-                    <Stack
-                      direction="row"
-                      alignItems="center"
-                      gap={1}
-                      sx={{ mt: 1 }}
-                    >
-                      <TextField
-                        value={commentDrafts[item._id] ?? ""}
-                        onChange={(e) =>
-                          setCommentDrafts((prev) => ({
-                            ...prev,
-                            [item._id]: e.target.value,
-                          }))
-                        }
-                        size="small"
-                        placeholder="Add Comment"
-                        fullWidth
-                        InputProps={{
-                          endAdornment: (
-                            <InputAdornment position="end">
-                              <IconButton
-                                onClick={() => handleAddFeedback(item._id)}
-                                edge="end"
-                                aria-label="send comment"
-                              >
-                                <SendIcon fontSize="small" />
-                              </IconButton>
-                            </InputAdornment>
-                          ),
-                        }}
-                      />
-                    </Stack>
-                  )}
-                </CardContent>
-
-                {feedbackOpen && (
-                  <Box sx={{ px: 2, pb: 2 }}>
-                    <Box
-                      sx={{
-                        mt: 1,
-                        p: 1.5,
-                        borderRadius: 2,
-                        bgcolor: "teal.50",
-                        border: "1px solid",
-                        borderColor: "teal.100",
+                  <Stack
+                    direction="row"
+                    alignItems="center"
+                    gap={1}
+                    sx={{ mt: 1 }}
+                  >
+                    <NormalInput
+                      value={commentDrafts[item._id] ?? ""}
+                      onChange={(e) =>
+                        setCommentDrafts((prev) => ({
+                          ...prev,
+                          [item._id]: e.target.value,
+                        }))
+                      }
+                      placeholder="Add Comment"
+                      fullWidth
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              onClick={() => handleAddFeedback(item._id)}
+                              edge="end"
+                              aria-label="send comment"
+                            >
+                              <SendIcon fontSize="small" />
+                            </IconButton>
+                          </InputAdornment>
+                        ),
                       }}
-                    >
-                      <Typography
-                        variant="subtitle2"
-                        color="teal.900"
-                        fontWeight={800}
-                        gutterBottom
-                      >
-                        Comments
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        color="teal.900"
-                        fontWeight={500}
-                      >
-                        {item.feedback ? item.feedback : "No Feedbacks"}
-                      </Typography>
-                    </Box>
+                    />
+                  </Stack>
+                  <Box
+                    sx={{
+                      mt: 1,
+                    }}
+                  >
+                    <SemiBoldText>Comments</SemiBoldText>
+                    <RegularText>
+                      {item.feedback ? item.feedback : "No Feedbacks"}
+                    </RegularText>
                   </Box>
-                )}
+                </CardContent>
               </Card>
             );
           })}
@@ -492,103 +419,15 @@ export default function SuggestionsListPage() {
         {loadingMore && (
           <Stack alignItems="center" justifyContent="center" sx={{ py: 2 }}>
             <CircularProgress size={20} />
-            <Typography variant="caption" sx={{ mt: 1 }}>
-              Loading more…
-            </Typography>
+            <RegularText sx={{ mt: 1 }}>Loading more…</RegularText>
           </Stack>
         )}
+        <SuggestionDetails
+          open={detailOpen}
+          close={handleCloseDetail}
+          data={detailData}
+        />
       </Container>
-
-      <Modal
-        open={detailOpen}
-        onClose={handleCloseDetail}
-        closeAfterTransition
-        slots={{ backdrop: Backdrop }}
-        slotProps={{ backdrop: { timeout: 200 } }}
-        aria-labelledby="suggestion-detail-title"
-      >
-        <Fade in={detailOpen}>
-          <Box
-            role="dialog"
-            aria-modal="true"
-            sx={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              width: isSmall ? "90%" : 520,
-              bgcolor: "background.paper",
-              borderRadius: 2,
-              boxShadow: 6,
-              p: 2,
-            }}
-          >
-            <Stack
-              direction="row"
-              alignItems="center"
-              justifyContent="space-between"
-              sx={{ mb: 1 }}
-            >
-              <Typography
-                id="suggestion-detail-title"
-                variant="h6"
-                fontWeight={700}
-              >
-                Suggestion Details
-              </Typography>
-              <Button onClick={handleCloseDetail} size="small" color="inherit">
-                ✕
-              </Button>
-            </Stack>
-            <Divider sx={{ mb: 2 }} />
-
-            <Stack spacing={1}>
-              <Typography variant="caption" color="text.secondary">
-                Suggestion Type
-              </Typography>
-              <Typography variant="body2">
-                {capitalize(detailData?.suggestionType || "Specific")}
-              </Typography>
-
-              <Typography variant="caption" color="text.secondary">
-                Generated At
-              </Typography>
-              <Typography variant="body2">
-                {formatToDateAndTime(
-                  detailData?.generatedAt || detailData?.createdAt
-                )}
-              </Typography>
-
-              <Typography variant="caption" color="text.secondary">
-                Sent for Review On
-              </Typography>
-              <Typography variant="body2">
-                {formatToDateAndTime(detailData?.sentAt) || "N/A"}
-              </Typography>
-
-              <Typography variant="caption" color="text.secondary">
-                Status
-              </Typography>
-              <Typography variant="body2">
-                {detailData?.status
-                  ? `${capitalize(detailData?.status)} on ${formatToDateAndTime(
-                      detailData?.updateStatusAt
-                    )}`
-                  : "N/A"}
-              </Typography>
-
-              <Typography variant="caption" color="text.secondary">
-                Feedback On
-              </Typography>
-              <Typography variant="body2">
-                {detailData?.feedback
-                  ? `${formatToDateAndTime(detailData?.feedbackAt)}`
-                  : "N/A"}
-              </Typography>
-            </Stack>
-          </Box>
-        </Fade>
-      </Modal>
     </LocalizationProvider>
   );
 }

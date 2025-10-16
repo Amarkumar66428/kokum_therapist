@@ -1,5 +1,7 @@
 import React, { useMemo, useEffect, useRef } from "react";
 import { Box, Typography, Button } from "@mui/material";
+import RegularText from "./typography/regularText";
+import SemiBoldText from "./typography/semiBoldText";
 
 const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -88,25 +90,23 @@ const ParallelCalendar = ({ selectedDate, setSelectedDate }) => {
             }}
             onClick={() => setSelectedDate(item.iso)}
           >
-            <Typography
-              variant="body2"
+            <RegularText
               sx={{
-                color: item.isToday || isSelected ? "#000" : "#9FA2AE",
-                fontWeight: 500,
+                color: item.isToday || isSelected ? "#000" : "#666",
+                fontSize: item.isToday || isSelected ? 14 : 12,
               }}
             >
               {item.day}
-            </Typography>
-            <Typography
-              variant="h6"
+            </RegularText>
+            <SemiBoldText
               sx={{
                 mt: 0.5,
                 color: item.isToday || isSelected ? "#000" : "#666",
-                fontWeight: 700,
+                fontSize:  item.isToday || isSelected ? 18 : 16,
               }}
             >
               {item.date}
-            </Typography>
+            </SemiBoldText>
           </Box>
         );
       })}

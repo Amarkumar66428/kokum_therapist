@@ -1,16 +1,18 @@
-/* Chart.scss */
 .chart-container {
   display: flex;
   flex-direction: row;
   align-items: flex-end;
   margin-top: 10px;
   padding-bottom: 16px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .chart-y-axis {
   position: relative;
   height: 200px;
   margin-right: 8px;
+  min-width: 24px;
 }
 
 .chart-y-label {
@@ -18,39 +20,45 @@
   left: 0;
   color: #888;
   line-height: 1;
+  white-space: nowrap;
 }
 
 .chart-scroll {
-  overflow-x: auto;
+  overflow-x: hidden;
   overflow-y: hidden;
   display: flex;
   flex: 1;
+  width: 100%;
 }
 
 .chart-grid {
   position: relative;
   height: 220px;
+  width: 100%;
 }
 
 .chart-grid-svg {
   position: absolute;
   top: 0;
   left: 0;
+  width: 100%;
 }
 
 .chart-bars {
   display: flex;
   flex-direction: row;
   align-items: flex-end;
-  gap: 6px;
+  justify-content: space-between;
   position: relative;
+  height: 200px;
+  width: 100%;
 }
 
 .chart-bar-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 40px;
+  flex-shrink: 1;
 }
 
 .chart-x-label {
@@ -58,13 +66,10 @@
   font-size: 12px;
   color: #333;
   text-transform: uppercase;
+  text-align: center;
 }
 
 .chart-bar-wrapper svg rect {
   cursor: pointer;
-  transition: opacity 0.2s ease;
-}
-
-.chart-bar-wrapper svg rect:hover {
-  opacity: 0.7;
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }

@@ -1,6 +1,16 @@
 import api from "../utils/axios";
 
 const therapistService = {
+  createChildDetails: async (data) => {
+    try {
+      const response = await api.post("/child-details", data);
+      return response.data;
+    } catch (error) {
+      console.error("error:", error);
+      throw error;
+    }
+  },
+  
   getTherapistDetails: async (therapistId) => {
     try {
       const response = await api.get(`/users/therapist/${therapistId}/full`);

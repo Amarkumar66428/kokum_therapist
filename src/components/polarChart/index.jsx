@@ -84,18 +84,19 @@ const BlackBorderPlugin = {
 ChartJS.register(OuterLabelPlugin, BlackBorderPlugin);
 
 const COLORS = [
-  "#9c27b0",
-  "#d32f2f",
-  "#8e24aa",
-  "#5e35b1",
-  "#7e57c2",
-  "#26a69a",
-  "#29b6f6",
-  "#8bc34a",
-  "#9e9e9e",
-  "#bdbdbd",
+  "#667da6",
+  "#ef8548",
+  "#e6b7b8",
+  "#5D6BC3",
+  "#cfb6e8",
+  "#edb578",
+  "#8de4ff",
+  "#b1d59d",
+  "#3883f5",
+  "#ef8548",
 ];
-const VALUES = [58.5, 89.6, 37.0, 46.6, 75.3, 89.0, 37.7, 79.8, 0.0, 0.0];
+
+const VALUES = [50, 50, 50, 50, 50, 50, 50, 50, 50, 50];
 const LABELS = [
   "Abnormal Posture",
   "Poor Eye Contact",
@@ -109,14 +110,14 @@ const LABELS = [
   "Anxiety",
 ];
 
-export default function PolarChart() {
+export default function PolarChart({ values }) {
   const data = useMemo(
     () => ({
       labels: LABELS,
       datasets: [
         {
           label: "Profile",
-          data: VALUES,
+          data: values || VALUES,
           backgroundColor: COLORS,
           borderWidth: 0, // we'll draw borders manually
         },

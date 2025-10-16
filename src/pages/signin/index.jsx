@@ -21,6 +21,10 @@ import { setUserData } from "../../reducer/authSlice";
 import Cookies from "js-cookie";
 import useSnackbar from "../../hooks/useSnackbar";
 import { useDispatch } from "react-redux";
+import SemiBoldText from "../../components/typography/semiBoldText";
+import RegularText from "../../components/typography/regularText";
+import { FONT_SIZE } from "../../constant/lookUpConstant";
+import RoundedButton from "../../components/button/roundedButton";
 
 const SignInPage = () => {
   const navigate = useNavigate();
@@ -85,45 +89,25 @@ const SignInPage = () => {
           py: 4,
         }}
       >
-        <Card
-          elevation={3}
+        <Box
           sx={{
             width: "100%",
-            maxWidth: 480,
-            borderRadius: 3,
-            overflow: "visible",
           }}
         >
           <CardContent sx={{ p: { xs: 3, sm: 4, md: 5 } }}>
             <Box sx={{ mb: 4, textAlign: "center" }}>
-              {" "}
-              <Typography
-                variant="h6"
-                component="h4"
-                fontWeight={600}
-                gutterBottom
-              >
-                Sign In{" "}
-              </Typography>{" "}
+              <SemiBoldText fontSize="2rem">Sign In</SemiBoldText>
             </Box>
 
-            {/* Error message */}
             {authError && (
-              <Alert severity="error" sx={{ mb: 2 }}>
+              <Alert severity="error" sx={{ mb: 2, fontFamily: "regular" }}>
                 {authError}
               </Alert>
             )}
 
-            {/* Form */}
             <Box component="form" onSubmit={formik.handleSubmit}>
               <Box sx={{ mb: 3 }}>
-                <Typography
-                  variant="body2"
-                  fontWeight={500}
-                  sx={{ mb: 1, color: "text.primary" }}
-                >
-                  Email Address
-                </Typography>
+                <RegularText>Email</RegularText>
                 <TextField
                   fullWidth
                   variant="outlined"
@@ -144,6 +128,8 @@ const SignInPage = () => {
                   }}
                   sx={{
                     "& .MuiOutlinedInput-root": {
+                      fontSize: FONT_SIZE.BODY,
+                      fontFamily: "regular",
                       borderRadius: 2,
                       "&:hover fieldset": {
                         borderColor: "primary.main",
@@ -153,14 +139,8 @@ const SignInPage = () => {
                 />
               </Box>
 
-              <Box sx={{ mb: 2 }}>
-                <Typography
-                  variant="body2"
-                  fontWeight={500}
-                  sx={{ mb: 1, color: "text.primary" }}
-                >
-                  Password
-                </Typography>
+              <Box sx={{ mb: 1 }}>
+                <RegularText>Password</RegularText>
                 <TextField
                   fullWidth
                   variant="outlined"
@@ -177,7 +157,7 @@ const SignInPage = () => {
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <Lock fontSize="small" color="action" />
+                        <Lock fontSize="small" color="primary.hlt_none" />
                       </InputAdornment>
                     ),
                     endAdornment: (
@@ -187,13 +167,19 @@ const SignInPage = () => {
                           edge="end"
                           size="small"
                         >
-                          {showPassword ? <VisibilityOff /> : <Visibility />}
+                          {showPassword ? (
+                            <VisibilityOff color="primary.hlt_none" />
+                          ) : (
+                            <Visibility color="primary.hlt_none" />
+                          )}
                         </IconButton>
                       </InputAdornment>
                     ),
                   }}
                   sx={{
                     "& .MuiOutlinedInput-root": {
+                      fontFamily: "regular",
+                      fontSize: FONT_SIZE.BODY,
                       borderRadius: 2,
                       "&:hover fieldset": {
                         borderColor: "primary.main",
@@ -204,45 +190,23 @@ const SignInPage = () => {
               </Box>
 
               <Box sx={{ py: 2 }}>
-                <Typography variant="caption" color="text.secondary">
+                <RegularText color="text.secondary">
                   By continuing, you agree to our{" "}
-                  <Link href="#" underline="hover" color="primary.main">
+                  <Link href="#" underline="hover" color="primary.hlt_main">
                     Terms
                   </Link>{" "}
                   and{" "}
-                  <Link href="#" underline="hover" color="primary.main">
+                  <Link href="#" underline="hover" color="primary.hlt_main">
                     Privacy Policy
                   </Link>
-                </Typography>
+                </RegularText>
               </Box>
-
-              {/* Sign In Button */}
-              <Button
-                fullWidth
-                type="submit"
-                variant="contained"
-                size="large"
-                disabled={loading}
-                sx={{
-                  borderRadius: 20,
-                  py: 1.5,
-                  fontSize: "1rem",
-                  fontWeight: 600,
-                  textTransform: "none",
-                  border: "1px solid #ccc",
-                  bgcolor: "#fff",
-                  boxShadow: 2,
-                  color: "primary.main",
-                  "&:hover": {
-                    boxShadow: 4,
-                  },
-                }}
-              >
+              <RoundedButton fullWidth type="submit" disabled={loading}>
                 {loading ? "Signing In..." : "Sign In"}
-              </Button>
+              </RoundedButton>
             </Box>
           </CardContent>
-        </Card>
+        </Box>
       </Box>
     </Container>
   );

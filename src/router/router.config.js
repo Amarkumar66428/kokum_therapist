@@ -77,7 +77,10 @@ export const appRouters = [
   },
   {
     path: "/appointments/schedule",
-    component: asyncComponent(() => import("../pages/appointment/scheduleAppointment.jsx")),
+    title: "Schedule Appointment",
+    component: asyncComponent(() =>
+      import("../pages/appointment/scheduleAppointment.jsx")
+    ),
   },
   {
     path: "/aiSuggestions/all",
@@ -98,7 +101,8 @@ export const appRouters = [
   {
     path: "/patientDetails",
     isPatientView: true,
-    title: "User",
+    title: "Patient Details",
+    tabTitle: "User",
     icon: PersonOutlineOutlined,
     component: asyncComponent(() =>
       import("../pages/patientDetails/index.jsx")
@@ -107,7 +111,8 @@ export const appRouters = [
   {
     path: "/therapyPlans",
     isPatientView: true,
-    title: "Therapy Plans",
+    title: "Last Therapy Plan",
+    tabTitle: "Therapy Plans",
     icon: CiDesktopMouse2,
     component: asyncComponent(() =>
       import("../pages/manageTherapyPlan/view.jsx")
@@ -116,6 +121,7 @@ export const appRouters = [
   {
     path: "/therapyPlans/last",
     isPatientView: true,
+    title: "New Therapy Plan",
     component: asyncComponent(() =>
       import("../pages/manageTherapyPlan/add.jsx")
     ),
@@ -123,6 +129,7 @@ export const appRouters = [
   {
     path: "/therapyPlans/history",
     isPatientView: true,
+    title: "Sessions History",
     component: asyncComponent(() =>
       import("../pages/manageTherapyPlan/history.jsx")
     ),
@@ -131,6 +138,7 @@ export const appRouters = [
     path: "/suggestions",
     isPatientView: true,
     title: "Suggestions",
+    tabTitle: "Suggestions",
     icon: FiSlack,
     component: asyncComponent(() =>
       import("../pages/aiSuggestion/ptntSuggestion.jsx")
@@ -138,10 +146,12 @@ export const appRouters = [
   },
   {
     path: "/myProfile",
+    title: "My Profile",
     component: asyncComponent(() => import("../pages/myProfile/index.jsx")),
   },
   {
     path: "/notifications",
+    title: "Notifications",
     component: asyncComponent(() => import("../pages/notification/index.jsx")),
   },
 ];

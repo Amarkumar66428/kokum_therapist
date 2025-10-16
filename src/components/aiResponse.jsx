@@ -1,6 +1,8 @@
 import React from "react";
 import { Typography, Box } from "@mui/material";
 import { styled } from "@mui/system";
+import RegularText from "./typography/regularText";
+import SemiBoldText from "./typography/semiBoldText";
 
 const BoldText = styled(Typography)(({ theme }) => ({
   fontWeight: 700,
@@ -30,25 +32,18 @@ const renderFormattedText = (textLike) => {
   let text = extractTextContent(textLike);
   if (!text) return null;
 
-  // Bold “instant suggestions” inline
   text = text.replace(/(instant suggestions)/gi, "**$1**");
 
-  // Force "Recommendations" onto a new line and bold it
   text = text.replace(/Recommendations/gi, "\n**Recommendations**");
 
-  // Split by **bold**
   const parts = text?.split(/(\*\*.*?\*\*)/g);
 
   const formattedOutput = parts.flatMap((part, index) => {
     if (part.startsWith("**") && part.endsWith("**")) {
       return (
-        <BoldText key={`bold-${index}`} component="span">
-          {part.slice(2, -2)}
-        </BoldText>
+        <SemiBoldText key={`bold-${index}`}>{part.slice(2, -2)}</SemiBoldText>
       );
     }
-
-    // Split by [ ... ]
     const subParts = part.split(/(\[.*?\])/g);
 
     return subParts.flatMap((subPart, subIndex) => {
@@ -65,34 +60,27 @@ const renderFormattedText = (textLike) => {
             sx={{
               display: "block",
               mt: 1,
-              ml: 2,
             }}
           >
             {items.map((item, itemIndex) => (
-              <Typography
+              <RegularText
                 key={`bracket-item-${index}-${subIndex}-${itemIndex}`}
-                variant="body2"
-                sx={{
-                  display: "block",
-                  color: "text.secondary",
-                  lineHeight: 1.6,
-                }}
               >
                 {itemIndex + 1}. {item}
-              </Typography>
+              </RegularText>
             ))}
           </Box>
         );
       }
 
       return (
-        <NormalText
+        <RegularText
           key={`text-${index}-${subIndex}`}
           variant="body1"
           component="span"
         >
           {subPart}
-        </NormalText>
+        </RegularText>
       );
     });
   });

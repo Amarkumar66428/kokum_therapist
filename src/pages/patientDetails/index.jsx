@@ -3,7 +3,9 @@ import {
   alpha,
   Box,
   CircularProgress,
+  Container,
   Grid,
+  Skeleton,
   Typography,
   useTheme,
 } from "@mui/material";
@@ -15,6 +17,47 @@ import TimelineCalendar from "../../components/timeLinechart";
 import BarChart from "../../components/barChart";
 import { IoIosArrowRoundForward } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
+import SkeletonBlock from "../../components/skeleton";
+import SemiBoldText from "../../components/typography/semiBoldText";
+import RegularText from "../../components/typography/regularText";
+import { AppColors } from "../../constant/appColors";
+import { formatTo12Hour } from "../../utils/helper";
+
+const formatDDMMYY = (iso) => {
+  if (!iso) return null;
+  const d = new Date(iso);
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const yy = String(d.getFullYear()).slice(-2);
+
+  return (
+    <span
+      style={{
+        color: AppColors.ERR_MAIN,
+      }}
+    >
+      {`${dd}/${mm}/${yy}`}
+      <span
+        style={{
+          color: AppColors.TXT_MAIN,
+        }}
+      >
+        {" "}
+        at{" "}
+      </span>
+      {formatTo12Hour(d)}
+    </span>
+  );
+};
+
+const daysUntil = (iso) => {
+  if (!iso) return 0;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const target = new Date(iso);
+  target.setHours(0, 0, 0, 0);
+  return Math.max(0, Math.ceil((target - today) / (1000 * 60 * 60 * 24)));
+};
 
 const toISODate = (d) => {
   const yr = d.getFullYear();
@@ -130,7 +173,7 @@ const PatientDetails = () => {
 
   useEffect(() => {
     fetchUserProfile();
-  }, []);
+  }, [selectedDate]);
 
   const handleTimeLineData = () => {
     const mergedData = [];
@@ -173,130 +216,102 @@ const PatientDetails = () => {
   };
 
   return (
-    <Box>
-      {loading ? (
-        <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
-          <CircularProgress color="inherit" size={40} />
-        </Box>
-      ) : (
-        <Grid container spacing={3}>
-          {/* LEFT COLUMN */}
-          <Grid size={{ xs: 12, md: 4 }}>
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-              <ChildDetailCard
-                childData={{
-                  name: patient?.patientName,
-                  age: patient?.patientAge,
-                  gender: patient?.patientGender,
-                  caretakerName: patient?.caretakerName,
-                }}
-              />
-
-              <ParallelCalendar
-                selectedDate={selectedDate}
-                setSelectedDate={setSelectedDate}
-              />
-
-              <Box>
-                <Typography
-                  variant="body1"
-                  sx={{
-                    fontWeight: 500,
-                    mb: 1,
-                    color: theme.palette.text.primary,
-                  }}
-                >
-                  Therapy Type
-                </Typography>
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 2,
-                    border: `1px solid ${theme.palette.primary.success}`,
-                    p: 2,
-                    borderRadius: 2,
-                    backgroundColor: alpha(theme.palette.primary.success, 0.1),
-                  }}
-                >
-                  <Typography variant="body2" color="primary.success">
-                    {patient?.therapyType || "N/A"}
-                  </Typography>
-                </Box>
-              </Box>
-
-              <Box>
-                <Typography
-                  variant="body1"
-                  sx={{
-                    mb: 2,
-                    fontWeight: 500,
-                    color: theme.palette.text.primary,
-                  }}
-                >
-                  Journey Overview
-                </Typography>
-                <BarChart realChartData={barChartData} />
-              </Box>
-            </Box>
-          </Grid>
-
-          {/* RIGHT COLUMN */}
-          <Grid size={{ xs: 12, md: 8 }}>
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-              <Box>
-                <Typography
-                  variant="body1"
-                  sx={{
-                    mb: 2,
-                    fontWeight: 500,
-                    color: theme.palette.text.primary,
-                  }}
-                >
-                  Routine & Activity
-                </Typography>
-                <TimelineCalendar events={handleTimeLineData() ?? []} />
-              </Box>
-
-              <Box
-                sx={{ py: 2 }}
-                onClick={() =>
-                  navigate(`/appointments/schedule/?id=${caretakerId}`)
-                }
-              >
-                <Typography
-                  variant="body1"
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    fontWeight: 500,
-                    color: "primary.success",
-                  }}
-                >
-                  Next Appointment
-                  <IoIosArrowRoundForward size={22} style={{ marginLeft: 4 }} />
-                </Typography>
-                {appointments?.date ? (
-                  <Typography
-                    variant="body2"
-                    sx={{ mt: 1, color: "primary.success" }}
-                  >
-                    {`${appointments.date} - ${appointments.time} with ${appointments.doctor}`}
-                  </Typography>
-                ) : (
-                  <Typography
-                    variant="body2"
-                    sx={{ mt: 1, color: "primary.success" }}
-                  >
-                    No upcoming appointment.
-                  </Typography>
-                )}
-              </Box>
-            </Box>
-          </Grid>
+    <Container maxWidth="lg">
+      <Grid container spacing={3}>
+        {/* LEFT COLUMN */}
+        <Grid size={{ xs: 12, md: 4 }}>
+          <ChildDetailCard
+            childData={{
+              name: patient?.patientName,
+              age: patient?.patientAge,
+              gender: patient?.patientGender,
+              caretakerName: patient?.caretakerName,
+            }}
+          />
         </Grid>
-      )}
-    </Box>
+        <Grid size={{ xs: 12, md: 8 }}>
+          <Box>
+            <SemiBoldText>Therapy Type</SemiBoldText>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 2,
+                border: `1px solid ${theme.palette.primary.success}`,
+                p: 2,
+                borderRadius: 2,
+                backgroundColor: alpha(theme.palette.primary.success, 0.1),
+              }}
+            >
+              <RegularText color={theme.palette.primary.success}>
+                {patient?.therapyType || "N/A"}
+              </RegularText>
+            </Box>
+          </Box>
+        </Grid>
+        <Grid size={{ xs: 12 }}>
+          <ParallelCalendar
+            selectedDate={selectedDate}
+            setSelectedDate={setSelectedDate}
+          />
+        </Grid>
+        <Grid size={{ xs: 12, md: 4 }}>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+            <Box>
+              <SemiBoldText
+                sx={{
+                  mb: 2,
+                }}
+              >
+                Journey Overview
+              </SemiBoldText>
+              {loading ? (
+                <SkeletonBlock
+                  variant="rectangular"
+                  width="100%"
+                  height={200}
+                  borderRadius={4}
+                />
+              ) : (
+                <BarChart realChartData={barChartData} />
+              )}
+            </Box>
+          </Box>
+
+          <Box
+            sx={{ cursor: "pointer" }}
+            onClick={() =>
+              navigate(`/appointments/schedule/?id=${caretakerId}`)
+            }
+          >
+            <Box sx={{ display: "flex", alignItems: "center" }}>
+              <SemiBoldText>Next Appointment</SemiBoldText>
+              <IoIosArrowRoundForward size={22} style={{ marginLeft: 4 }} />
+            </Box>
+            {appointments?.date ? (
+              <RegularText>
+                Your next Appointment date{" "}
+                {formatDDMMYY(appointments?.appointmentAt)}
+                <br />({daysUntil(appointments?.appointmentAt)} day
+                {daysUntil(appointments?.appointmentAt) !== 1 ? "s" : ""} left)
+              </RegularText>
+            ) : (
+              <RegularText>No upcoming appointment.</RegularText>
+            )}
+          </Box>
+        </Grid>
+
+        {/* RIGHT COLUMN */}
+        <Grid size={{ xs: 12, md: 8 }}>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+            <Box>
+              <SemiBoldText>Routine & Activity</SemiBoldText>
+              <TimelineCalendar events={handleTimeLineData() ?? []} />
+            </Box>
+          </Box>
+        </Grid>
+      </Grid>
+    </Container>
   );
 };
 

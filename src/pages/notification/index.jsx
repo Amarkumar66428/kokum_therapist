@@ -14,11 +14,17 @@ import {
   DialogContent,
   DialogActions,
   AppBar,
+  useTheme,
 } from "@mui/material";
 import { DeleteSweep, DoneAll, NotificationsNone } from "@mui/icons-material";
 import notificationService from "../../services/notificationService";
+import RegularText from "../../components/typography/regularText";
+import NormalButton from "../../components/button/normalButton";
+import SemiBoldText from "../../components/typography/semiBoldText";
+import RoundedButton from "../../components/button/roundedButton";
 
 const Notifications = () => {
+  const theme = useTheme();
   const [notifications, setNotifications] = useState([]);
   const [filter, setFilter] = useState("all");
   const [loading, setLoading] = useState(false);
@@ -112,8 +118,8 @@ const Notifications = () => {
       scrollButtons="auto"
       sx={{
         borderBottom: "1px solid #e0e0e0",
-        "& .MuiTab-root": { textTransform: "none", fontWeight: 600 },
-        "& .Mui-selected": { color: "primary.main" },
+        "& .MuiTab-root": { textTransform: "none", fontFamily: "regular" },
+        "& .Mui-selected": { fontFamily: "semibold" },
       }}
     >
       <Tab label="All" value="all" />
@@ -126,22 +132,25 @@ const Notifications = () => {
     <Box>
       <AppBar
         position="sticky"
-        color="inherit"
         elevation={0}
         sx={{
-          p: 2,
           boxShadow: "none",
           borderRadius: 2,
+          backgroundColor: "background.default",
         }}
       >
-        <Grid container alignItems="center" spacing={2}>
+        <Grid
+          container
+          alignItems="center"
+          spacing={2}
+          sx={{ backgroundColor: "secondary.main", mb: 1, p: 2 }}
+        >
           <Grid size={{ xs: 12, md: 8 }}>
-            <Typography>Notifications</Typography>
             {unreadCount > 0 && (
-              <Typography variant="body2" color="error.main">
+              <RegularText color="error.main">
                 {unreadCount} unread notification
                 {unreadCount !== 1 ? "s" : ""}
-              </Typography>
+              </RegularText>
             )}
           </Grid>
           <Grid
@@ -151,30 +160,24 @@ const Notifications = () => {
             gap={1}
             flexWrap="wrap"
           >
-            <Button
-              variant="outlined"
-              color="primary"
-              size="small"
+            <NormalButton
               startIcon={<DoneAll />}
               onClick={markAllAsRead}
               disabled={markReadLoading || unreadCount === 0}
             >
               {markReadLoading ? "Marking..." : "Mark All Read"}
-            </Button>
-            <Button
-              variant="outlined"
-              color="error"
-              size="small"
+            </NormalButton>
+            <NormalButton
               startIcon={<DeleteSweep />}
               onClick={() => setConfirmOpen(true)}
               disabled={clearLoading}
             >
               {clearLoading ? "Clearing..." : "Clear All"}
-            </Button>
+            </NormalButton>
           </Grid>
         </Grid>
+        <FilterTabs />
       </AppBar>
-      <FilterTabs />
 
       <Box sx={{ marginTop: 2 }}>
         {loading ? (
@@ -194,23 +197,21 @@ const Notifications = () => {
             }}
           >
             <NotificationsNone sx={{ fontSize: 80, color: "#ccc" }} />
-            <Typography variant="h6" mt={2}>
-              No notifications
-            </Typography>
-            <Typography variant="body2">
+            <SemiBoldText>No notifications</SemiBoldText>
+            <RegularText>
               {filter === "unread"
                 ? "You're all caught up!"
                 : filter === "read"
                 ? "No read notifications yet."
                 : "You don't have any notifications yet."}
-            </Typography>
-            <Button
+            </RegularText>
+            <RoundedButton
               sx={{ mt: 2 }}
               variant="contained"
               onClick={() => fetchNotifications(true)}
             >
               Refresh
-            </Button>
+            </RoundedButton>
           </Box>
         ) : (
           <Grid container spacing={2}>
@@ -219,7 +220,9 @@ const Notifications = () => {
                 <Card
                   variant="outlined"
                   sx={{
-                    borderLeft: !item.read && "4px solid #072c85",
+                    borderLeft:
+                      !item.read &&
+                      `4px solid ${theme.palette.primary.hlt_main}`,
                     transition: "all 0.2s ease-in-out",
                     "&:hover": {
                       boxShadow: 1,
@@ -228,19 +231,17 @@ const Notifications = () => {
                   onClick={() => markAsRead(item._id)}
                 >
                   <CardContent>
-                    <Typography
-                      variant="subtitle1"
-                      fontWeight={item.read ? 500 : 700}
-                      color={item.read ? "text.primary" : "primary.main"}
+                    <RegularText
+                      sx={{
+                        fontFamily: item.read ? "regular" : "semiBold",
+                      }}
                     >
                       {item.title}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" mb={1}>
+                    </RegularText>
+                    <RegularText mb={1}>
                       {fetchDateTime(item.createdAt)}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {item.message}
-                    </Typography>
+                    </RegularText>
+                    <RegularText>{item.message}</RegularText>
                   </CardContent>
                 </Card>
               </Grid>
@@ -250,17 +251,23 @@ const Notifications = () => {
       </Box>
 
       {/* Confirm Clear All */}
-      <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
-        <DialogTitle>Clear All Notifications</DialogTitle>
+      <Dialog
+        open={confirmOpen}
+        sx={{ "& .MuiDialog-paper": { p: 2 } }}
+        onClose={() => setConfirmOpen(false)}
+      >
+        <SemiBoldText>Clear All Notifications</SemiBoldText>
         <DialogContent>
-          <Typography>
+          <RegularText>
             Are you sure you want to clear all notifications? This action cannot
             be undone.
-          </Typography>
+          </RegularText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setConfirmOpen(false)}>Cancel</Button>
-          <Button
+          <NormalButton variant="text" onClick={() => setConfirmOpen(false)}>
+            Cancel
+          </NormalButton>
+          <NormalButton
             color="error"
             onClick={() => {
               deleteNotification("all");
@@ -268,7 +275,7 @@ const Notifications = () => {
             }}
           >
             Clear All
-          </Button>
+          </NormalButton>
         </DialogActions>
       </Dialog>
     </Box>

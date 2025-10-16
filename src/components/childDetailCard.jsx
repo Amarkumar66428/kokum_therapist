@@ -1,5 +1,6 @@
 import React from "react";
 import { Box, Typography, Paper, Card } from "@mui/material";
+import SemiBoldText from "./typography/semiBoldText";
 
 const ChildDetailCard = ({ childData }) => {
   return (
@@ -7,17 +8,15 @@ const ChildDetailCard = ({ childData }) => {
       sx={{
         borderRadius: "12px",
         overflow: "hidden",
-        background: "linear-gradient(to right, #EBFCFD, #EFF6FF)",
+        background: "secondary.main",
       }}
     >
       <Box sx={{ px: 3, py: 2 }}>
         <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-          <Typography variant="h6" sx={{ fontWeight: 500, color: "#082878" }}>
-            {childData?.name}
-          </Typography>
-          <Typography variant="body1" sx={{ color: "#082878" }}>
-            {childData?.age} / {childData?.gender}
-          </Typography>
+          <SemiBoldText>{childData?.name}</SemiBoldText>
+          <SemiBoldText>
+            {childData?.age || "--"} / {childData?.gender || "--"}
+          </SemiBoldText>
         </Box>
       </Box>
       <Box sx={{ height: 2, bgcolor: "#000" }} />
@@ -25,12 +24,8 @@ const ChildDetailCard = ({ childData }) => {
         sx={{ px: 3, py: 2, display: "flex", flexDirection: "column", gap: 2 }}
       >
         <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-          <Typography sx={{ color: "#082878", fontWeight: 500 }}>
-            Caretaker Name
-          </Typography>
-          <Typography sx={{ color: "#082878" }}>
-            {childData?.caretakerName || "N/A"}
-          </Typography>
+          <SemiBoldText>Caretaker Name</SemiBoldText>
+          <SemiBoldText>{childData?.caretakerName || "N/A"}</SemiBoldText>
         </Box>
       </Box>
     </Card>

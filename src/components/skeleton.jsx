@@ -17,24 +17,18 @@ const SkeletonBlock = ({
   width = "100%",
   height = 40,
   animation = "wave",
-  spacing = 2,
-  direction = "column",
   borderRadius = 0,
 }) => {
-  return (
-    <Stack spacing={spacing} direction={direction}>
-      {Array.from({ length: count }).map((_, i) => (
-        <Skeleton
-          key={i}
-          variant={variant}
-          width={width}
-          height={height}
-          animation={animation}
-          sx={{ borderRadius }}
-        />
-      ))}
-    </Stack>
-  );
+  return Array.from({ length: count }).map((_, i) => (
+    <Skeleton
+      key={i}
+      variant={variant}
+      width={width}
+      height={height}
+      animation={animation}
+      sx={{ borderRadius }}
+    />
+  ));
 };
 
 export default SkeletonBlock;

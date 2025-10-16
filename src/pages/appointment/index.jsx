@@ -11,15 +11,14 @@ import {
   AppBar,
   Toolbar,
 } from "@mui/material";
-import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import { useNavigate } from "react-router-dom";
 import therapistService from "../../services/therapistService";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
-import dayjs from "dayjs";
-
-const formatDate = (date) => dayjs(date).format("DD/MM/YYYY");
+import SemiBoldText from "../../components/typography/semiBoldText";
+import RegularText from "../../components/typography/regularText";
+import RoundedButton from "../../components/button/roundedButton";
 
 const formatDisplayDate = (isoDate) => {
   const d = new Date(isoDate);
@@ -84,58 +83,59 @@ const AppointmentsPage = () => {
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <AppBar
         position="sticky"
-        color="inherit"
+        color="background.default"
         elevation={0}
         sx={{
           boxShadow: "none",
           borderRadius: 2,
         }}
       >
-        <Toolbar sx={{ px: 2 }}>
-          <Typography>Appointments</Typography>
-        </Toolbar>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            borderBottom: "1px solid #e0e0e0",
+          }}
+        >
+          <Tabs
+            value={activeTab}
+            onChange={handleTabChange}
+            variant="scrollable"
+            scrollButtons="auto"
+            sx={{
+              borderBottom: "1px solid #e0e0e0",
+              "& .MuiTab-root": {
+                textTransform: "none",
+                fontFamily: "regular",
+              },
+              "& .Mui-selected": { fontFamily: "semibold" },
+            }}
+          >
+            <Tab label="Upcoming" value="upcoming" />
+            <Tab label="Previous" value="previous" />
+          </Tabs>
+          <Box sx={{ ml: "auto" }}>
+            <DatePicker
+              value={selectedDate}
+              onChange={(v) => v && setSelectedDate(v)}
+              format="D MM, YYYY"
+              sx={{
+                fontSize: 12,
+                "& .MuiPickersInputBase-sectionsContainer": {
+                  padding: 1.5,
+                },
+              }}
+            />
+          </Box>
+        </Box>
       </AppBar>
 
       {/* Tabs + Calendar */}
-      <Box sx={{ display: "flex" }}>
-        <Tabs
-          value={activeTab}
-          onChange={handleTabChange}
-          sx={{
-            "& .MuiTab-root": {
-              textTransform: "none",
-              fontSize: 16,
-              color: "#7d7d7e",
-            },
-            "& .Mui-selected": {
-              color: "#0A0A0A",
-            },
-            "& .MuiTabs-indicator": { display: "none" },
-          }}
-        >
-          <Tab label="Upcoming" value="upcoming" />
-          <Tab label="Previous" value="previous" />
-        </Tabs>
-        <Box sx={{ ml: "auto" }}>
-          <DatePicker
-            value={selectedDate}
-            onChange={(v) => v && setSelectedDate(v)}
-            format="DD/MM/YYYY"
-            slots={{
-              openPickerIcon: CalendarMonthIcon,
-            }}
-            slotProps={{
-              textField: {
-                placeholder: formatDate(selectedDate),
-              },
-            }}
-          />
-        </Box>
-      </Box>
 
       {/* Content */}
       <Box
         sx={{
+          mt: 2,
           px: { xs: 2, md: 4 },
           pb: 6,
           display: "flex",
@@ -154,22 +154,23 @@ const AppointmentsPage = () => {
             }}
           >
             <CircularProgress color="primary" />
-            <Typography sx={{ mt: 2 }}>Loading appointments...</Typography>
+            <SemiBoldText sx={{ mt: 2 }}>Loading appointments...</SemiBoldText>
           </Box>
         ) : appointments.length === 0 ? (
           <Box
             sx={{
+              mt: 2,
               py: 8,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
             }}
           >
-            <Typography color="text.secondary">
+            <SemiBoldText color="text.secondary">
               {activeTab === "upcoming"
                 ? "No upcoming appointments."
                 : "No previous appointments."}
-            </Typography>
+            </SemiBoldText>
           </Box>
         ) : (
           appointments.map((item) => (
@@ -185,28 +186,20 @@ const AppointmentsPage = () => {
             >
               <Grid container spacing={1.5}>
                 <Grid size={{ xs: 6, md: 4 }}>
-                  <Typography variant="body2" color="#0F2851" fontWeight={800}>
-                    Date
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  <SemiBoldText>Date</SemiBoldText>
+                  <RegularText>
                     {formatDisplayDate(item.appointmentAt)}
-                  </Typography>
+                  </RegularText>
                 </Grid>
 
                 <Grid size={{ xs: 6, md: 4 }}>
-                  <Typography variant="body2" color="#898D9E" fontWeight={600}>
-                    Time
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {formatDisplayTime(item.time)}
-                  </Typography>
+                  <SemiBoldText>Time</SemiBoldText>
+                  <RegularText>{formatDisplayTime(item.time)}</RegularText>
                 </Grid>
 
                 <Grid size={{ xs: 12, md: 4 }}>
-                  <Typography variant="body2" color="#002F8D" fontWeight={700}>
-                    Patient Name
-                  </Typography>
-                  <Typography variant="body2">{item.patientName}</Typography>
+                  <SemiBoldText>Patient Name</SemiBoldText>
+                  <RegularText>{item.patientName}</RegularText>
                 </Grid>
               </Grid>
             </Paper>
@@ -214,29 +207,15 @@ const AppointmentsPage = () => {
         )}
 
         <Box sx={{ textAlign: "center" }}>
-          <Button
+          <RoundedButton
             onClick={() => navigate("/appointments/schedule")}
-            variant="outlined"
-            sx={{
-              borderRadius: 45,
-              borderColor: "#CFEAE0",
-              backgroundColor: "#F2FBF8",
-              color: "#0B726E",
-              fontWeight: 700,
-              fontSize: 15,
-              py: 1.4,
-              px: 10,
-              textTransform: "none",
-              boxShadow: "0px 2px 4px rgba(0,0,0,0.05)",
-              "&:hover": {
-                backgroundColor: "#E6F7F0",
-                borderColor: "#A8D9C8",
-              },
-            }}
             startIcon={<AddCircleOutlineIcon />}
+            sx={{
+              width: "30em",
+            }}
           >
             Schedule a New Appointment
-          </Button>
+          </RoundedButton>
         </Box>
       </Box>
     </LocalizationProvider>

@@ -1,34 +1,39 @@
-export const FontSize = {
-  HEADING: 18,
-  TITLE: 16,
-  SUB_TITLE: 14,
-  MINI: 12,
-  BUTTON: 12,
+const FONT_SIZE = {
+  DISPLAY: "2rem",
+  HEADER: "1.5rem",
+  TITLE: "1rem",
+  BODY: "0.875rem",
+  CAPTION: "0.75rem",
 };
 
-export const IconSize = {
-  MAIN: 48,
-  SUB: 24,
-  MINI: 20,
-  TINY: 18,
+const ICON_SIZE = {
+  XL: 48,
+  LG: 32,
+  MD: 24,
+  SM: 20,
+  XS: 16,
 };
 
-export const Shadow = {
-  MAIN: 4,
-  SUB: 2,
+const ELEVATION = {
+  HIGH: 8,
+  MEDIUM: 4,
+  LOW: 2,
 };
 
-export const SectionSpace = {
-  SUPER: 24,
-  MAIN: 18,
-  SUB: 12,
-  MINI: 8,
-  TINY: 4,
+const SPACING = {
+  XL: 24,
+  LG: 18,
+  MD: 12,
+  SM: 8,
+  XS: 4,
 };
 
-export const BoxBorderRadius = {
-  SUPER: 20,
-  MAIN: 12,
-  SUB: 8,
-  MINI: 4,
+const BORDER_RADIUS = {
+  XL: 20,
+  NL: 16,
+  LG: 12,
+  MD: 8,
+  SM: 4,
 };
+
+export { FONT_SIZE, ICON_SIZE, ELEVATION, SPACING, BORDER_RADIUS };

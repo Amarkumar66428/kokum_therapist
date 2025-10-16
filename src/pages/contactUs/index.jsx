@@ -1,36 +1,38 @@
 import { Email, PinDrop } from "@mui/icons-material";
-import { Box, Typography, Stack, AppBar, Toolbar } from "@mui/material";
+import { Box, Stack, Divider, Link } from "@mui/material";
+import RegularText from "../../components/typography/regularText";
 
 const ContactUs = () => {
+  const email = "Kokumassist@kokumassist.com";
+  const location = "Mumbai, Maharashtra, India";
+
   return (
     <Box>
-      <AppBar
-        position="sticky"
-        color="inherit"
-        elevation={0}
-        sx={{
-          boxShadow: "none",
-          borderRadius: 2,
-        }}
-      >
-        <Toolbar sx={{ px: 2 }}>
-          <Typography>Contact Us</Typography>
-        </Toolbar>
-      </AppBar>
-      <Stack spacing={3} mt={2}>
+      <Stack spacing={2} mt={2}>
+        {/* Email */}
         <Box display="flex" alignItems="center" gap={2}>
-          <Email sx={{ color: "#646464" }} fontSize="medium" />
-          <Typography variant="body1" color="text.secondary">
-            Kokumassist@kokumassist.com
-          </Typography>
+          <Email sx={{ color: "primary.icon" }} fontSize="medium" />
+          <Link
+            href={`mailto:${email}`}
+            underline="hover"
+            sx={{
+              cursor: "pointer",
+              textDecoration: "underline",
+              "&:hover": { color: "primary.hlt_main" },
+            }}
+          >
+            <RegularText sx={{ "&:hover": { color: "primary.hlt_main" } }}>
+              {email}
+            </RegularText>
+          </Link>
         </Box>
+
+        <Divider variant="middle" />
+
+        {/* Location */}
         <Box display="flex" alignItems="flex-start" gap={2}>
-          <PinDrop sx={{ color: "#646464" }} fontSize="medium" />
-          <Typography variant="body1" color="text.secondary">
-            601 Gopal Vishnu CHS Ltd. Mahant Road, Opposite Ruia School, Vile
-            Parle (East), Vile Parle Police Station, Mumbai, 400057,
-            Maharashtra, India
-          </Typography>
+          <PinDrop sx={{ color: "primary.icon" }} fontSize="medium" />
+          <RegularText>{location}</RegularText>
         </Box>
       </Stack>
     </Box>

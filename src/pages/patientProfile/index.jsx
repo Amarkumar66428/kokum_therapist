@@ -5,8 +5,6 @@ import patientService from "../../services/patientService";
 import SkeletonBlock from "../../components/skeleton";
 import { useSelector } from "react-redux";
 
-const bubbleFilters = ["Autism", "Cerebral Palsy", "ADHD", "Dyslexia"];
-
 const PatientProfile = () => {
   const debounceRef = useRef(null);
   const searchedPatient = useSelector((state) => state?.patient?.searchPatient);
@@ -39,20 +37,6 @@ const PatientProfile = () => {
 
   return (
     <Box sx={{ p: 2 }}>
-      <Stack
-        direction="row"
-        spacing={1}
-        sx={{ mb: 3, overflowX: "auto", pb: 1 }}
-      >
-        {bubbleFilters.map((filter) => (
-          <Chip
-            key={filter}
-            label={filter}
-            clickable
-            sx={{ bgcolor: "#EDF2FA", color: "#222" }}
-          />
-        ))}
-      </Stack>
       <Grid container spacing={3}>
         {loading ? (
           <>

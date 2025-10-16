@@ -12,10 +12,13 @@ import {
   Paper,
 } from "@mui/material";
 import { Leaderboard } from "@mui/icons-material";
-import { FontSize } from "../constant/lookUpConstant";
 import { useNavigate } from "react-router-dom";
 import usePatient from "../hooks/usePatient";
 import PolarChart from "./polarChart";
+import RegularText from "./typography/regularText";
+import { ICON_SIZE } from "../constant/lookUpConstant";
+import SemiBoldText from "./typography/semiBoldText";
+import RoundedButton from "./button/roundedButton";
 
 const ACTIVITY_COLORS = [
   "#ef8548",
@@ -43,14 +46,16 @@ const PatientCard = ({ patient }) => {
 
   const {
     patientId = "",
+    patientCode = "",
     caretakerId = "",
     patientName = "",
     patientAge = null,
     patientGender = "",
     caretakerName = "",
     caretakerEmail = "",
-    diagnosis = "",
+    therapyType = "",
     DailyActivities = [],
+    journeyEntries = [],
     activity = "",
     interest = "",
     aggressionValue = "",
@@ -63,11 +68,7 @@ const PatientCard = ({ patient }) => {
 
     // Fix: journeyEntries should be an array of values if journeyEntries[0] exists
     let journey = [];
-    if (
-      Array.isArray(patient?.journeyEntries) &&
-      patient.journeyEntries.length > 0 &&
-      typeof patient.journeyEntries[0] === "object"
-    ) {
+    if (Array.isArray(patient?.journeyEntries) && patient.journeyEntries[0]) {
       journey = Object.values(patient.journeyEntries[0]);
     }
 
@@ -87,13 +88,14 @@ const PatientCard = ({ patient }) => {
 
     return {
       patientId: bd._id ?? "",
+      patientCode: bd.patientId ?? "",
       caretakerId: ct._id ?? "",
       patientName: bd.patientName ?? "",
       patientAge: cd.age ?? null,
       patientGender: cd.gender ? cd.gender.charAt(0).toUpperCase() : "",
       caretakerName: ct.name ?? "",
       caretakerEmail: ct.email ?? "",
-      diagnosis: Array.isArray(cd.therapyDetails)
+      therapyType: Array.isArray(cd.therapyDetails)
         ? cd.therapyDetails.join(", ")
         : "",
       journeyEntries: journey,
@@ -115,6 +117,8 @@ const PatientCard = ({ patient }) => {
       caretakerName,
       caretakerEmail,
       caretakerId,
+      therapyType,
+      patientCode,
     };
 
     setPatient(patientData);
@@ -147,11 +151,11 @@ const PatientCard = ({ patient }) => {
           alignItems: "center",
         }}
       >
-        <Typography fontWeight={700}>{patientName}</Typography>
+        <SemiBoldText>{patientName}</SemiBoldText>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <Typography fontSize={14} color="text.secondary">
-            {patientAge} yr / {patientGender}
-          </Typography>
+          <RegularText>
+            {patientAge || "--"} yr / {patientGender || "--"}
+          </RegularText>
         </Box>
       </Box>
 
@@ -164,25 +168,19 @@ const PatientCard = ({ patient }) => {
         }}
       />
 
-      <Typography fontSize={14} color="success.main" fontWeight={600}>
-        {diagnosis || "No Diagnosis"}
-      </Typography>
+      <RegularText color="primary.success">
+        {therapyType || "No Diagnosis"}
+      </RegularText>
       <Collapse in={expand} timeout="auto" unmountOnExit>
         <Box sx={{ mt: 2 }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
-            <PolarChart />
+            <PolarChart
+              values={journeyEntries?.length > 0 ? journeyEntries : null}
+            />
             <Stack spacing={0.7}>
-              <Typography
-                fontSize={"1em"}
-                color="secondary.sub"
-                fontWeight={600}
-              >
-                Daily Activity
-              </Typography>
+              <SemiBoldText>Daily Activity</SemiBoldText>
               {DailyActivities?.length <= 0 ? (
-                <Typography fontSize={14} color="text.secondary">
-                  No activity
-                </Typography>
+                <RegularText color="text.secondary">No activity</RegularText>
               ) : (
                 DailyActivities.map((act, index) => (
                   <Box
@@ -197,9 +195,7 @@ const PatientCard = ({ patient }) => {
                         borderRadius: 5,
                       }}
                     />
-                    <Typography fontSize={14} color="text.secondary">
-                      {act}
-                    </Typography>
+                    <RegularText>{act}</RegularText>
                   </Box>
                 ))
               )}
@@ -207,17 +203,13 @@ const PatientCard = ({ patient }) => {
           </Box>
 
           <Box sx={{ display: "flex", gap: 1, mb: 1 }}>
-            <Typography fontWeight={600}>Activity:</Typography>
-            <Typography fontSize={14} color="text.secondary">
-              {activity}
-            </Typography>
+            <SemiBoldText>Activity:</SemiBoldText>
+            <RegularText>{activity}</RegularText>
           </Box>
 
           <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
-            <Typography fontWeight={600}>Interest:</Typography>
-            <Typography fontSize={14} color="text.secondary">
-              {interest}
-            </Typography>
+            <SemiBoldText>Interest:</SemiBoldText>
+            <RegularText>{interest}</RegularText>
           </Box>
         </Box>
         <Box
@@ -227,28 +219,15 @@ const PatientCard = ({ patient }) => {
             alignItems: "start",
           }}
         >
-          <Button
-            size="large"
-            variant="outlined"
-            sx={{
-              px: 5,
-              fontWeight: 600,
-              textTransform: "none",
-              borderRadius: 5,
-              color: "#0b726e",
-              borderColor: "#0b726e",
-              background: alpha("#0b726e", 0.1),
-            }}
-            onClick={handleExplore}
-          >
+          <RoundedButton sx={{ width: 200 }} onClick={handleExplore}>
             Explore More
-          </Button>
+          </RoundedButton>
           <Button
             sx={{ p: 0, display: "flex", flexDirection: "column", gap: 1 }}
             onClick={() => openDiagnosisModal(diagnosisReport || {})}
           >
             <img src="/src/assets/svg/diagnosis.svg" alt="diagnosisIcon" />
-            <Typography fontSize={8}>
+            <Typography fontSize={10} fontFamily={"regular"}>
               Diagnosis <br /> Report
             </Typography>
           </Button>
@@ -257,7 +236,7 @@ const PatientCard = ({ patient }) => {
             onClick={() => navigate(`/reports/?id=${caretakerId}`)}
           >
             <img src="/src/assets/svg/progress-report.svg" alt="progressIcon" />
-            <Typography fontSize={8}>
+            <Typography fontSize={10} fontFamily={"regular"}>
               Progress <br />
               Report
             </Typography>
@@ -266,11 +245,9 @@ const PatientCard = ({ patient }) => {
       </Collapse>
 
       <Box sx={{ display: "flex", alignItems: "center", gap: 2, mt: 2 }}>
-        <Leaderboard color="secondary" fontSize="large" />
-        <Typography fontWeight={600}>{aggressionValue || "0"}%</Typography>
-        <Typography fontSize={FontSize.SUB_TITLE} color="black">
-          {aggression || "No Aggression"}
-        </Typography>
+        <Leaderboard sx={{ color: "primary.icon", fontSize: ICON_SIZE.MD }} />
+        <SemiBoldText>{aggressionValue || "0"}%</SemiBoldText>
+        <RegularText>{aggression || "No Aggression"}</RegularText>
       </Box>
       <Modal
         open={diagnosisModalVisible}
@@ -295,9 +272,7 @@ const PatientCard = ({ patient }) => {
           }}
           onClick={(e) => e.stopPropagation()}
         >
-          <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
-            Diagnosis Report
-          </Typography>
+          <SemiBoldText>Diagnosis Report</SemiBoldText>
 
           <Box
             sx={{
@@ -306,9 +281,9 @@ const PatientCard = ({ patient }) => {
               mb: 2,
             }}
           >
-            <Typography sx={{ color: "#333", lineHeight: 1.6 }}>
+            <RegularText>
               {diagnosisContent.text || "No diagnosis text available."}
-            </Typography>
+            </RegularText>
           </Box>
 
           <Box sx={{ display: "flex", gap: 2 }}>
@@ -318,7 +293,7 @@ const PatientCard = ({ patient }) => {
               onClick={() => setDiagnosisModalVisible(false)}
               sx={{
                 borderColor: "#E6E6E6",
-                color: "#0B726E",
+                color: "primary.main",
                 "&:hover": {
                   borderColor: "#0B726E",
                   bgcolor: "#f9f9f9",
@@ -330,7 +305,7 @@ const PatientCard = ({ patient }) => {
             {diagnosisContent.fileUrl && (
               <Button
                 variant="contained"
-                color="primary"
+                sx={{ backgroundColor: "primary.label", color: "secondary" }}
                 fullWidth
                 onClick={() => window.open(diagnosisContent.fileUrl, "_blank")}
               >

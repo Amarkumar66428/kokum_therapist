@@ -1,15 +1,62 @@
 // Chart.jsx
-import React from "react";
+import React, { useRef, useEffect, useState } from "react";
 import "./Chart.scss";
 
-const BarChart = ({ selectedFilter, realChartData, onBarPress }) => {
+const BarChart = ({
+  selectedFilter = "All",
+  realChartData = [],
+  onBarPress,
+}) => {
+  const containerRef = useRef(null);
+  const [containerWidth, setContainerWidth] = useState(600);
   const totalHeight = 200;
-  const labelFontSize = 12; // Replace FontSize.SUB_TITLE
-  const categoryColors = ["#D11B49", "#3B82F6", "#10B981", "#F59E0B"]; // Example colors
-  const categoryLabels = ["Metric1", "Metric2", "Metric3", "Metric4"]; // Example labels
+  const labelFontSize = 12;
+
+  // Generate dynamic category colors
+  const categoryColors = [
+    "#667da6",
+    "#ef8548",
+    "#e6b7b8",
+    "#5D6BC3",
+    "#cfb6e8",
+    "#edb578",
+    "#8de4ff",
+    "#b1d59d",
+    "#3883f5",
+    "#ef8548",
+  ];
+  // Dummy category labels (if filters used)
+  const categoryLabels = Array.from({ length: 10 }, (_, i) => `Metric${i + 1}`);
+
+  // Resize listener for responsiveness
+  useEffect(() => {
+    const handleResize = () => {
+      if (containerRef.current) {
+        setContainerWidth(containerRef.current.offsetWidth);
+      }
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  if (!realChartData.length) return null;
+
+  const maxValueAll =
+    selectedFilter === "All"
+      ? Math.max(
+          ...realChartData.map((day) =>
+            day.values.reduce((sum, val) => sum + val, 0)
+          )
+        )
+      : 100;
+
+  // Calculate dynamic bar width based on number of days
+  const barWidth = Math.max(containerWidth / realChartData.length - 8, 20);
+  const chartWidth = containerWidth;
 
   return (
-    <div className="chart-container">
+    <div className="chart-container" ref={containerRef}>
       {/* Y-axis labels */}
       <div className="chart-y-axis">
         {[100, 80, 60, 40, 20, 0].map((percent, i) => {
@@ -30,15 +77,12 @@ const BarChart = ({ selectedFilter, realChartData, onBarPress }) => {
         })}
       </div>
 
-      {/* Bars */}
+      {/* Chart grid and bars */}
       <div className="chart-scroll">
-        <div
-          className="chart-grid"
-          style={{ width: `${realChartData?.length * 40}px` }}
-        >
+        <div className="chart-grid" style={{ width: `${chartWidth}px` }}>
           <svg
             height={totalHeight}
-            width={realChartData?.length * 40}
+            width={chartWidth}
             className="chart-grid-svg"
           >
             {[0, 20, 40, 60, 80, 100].map((p, idx) => (
@@ -46,7 +90,7 @@ const BarChart = ({ selectedFilter, realChartData, onBarPress }) => {
                 key={idx}
                 x1={0}
                 y1={totalHeight - (p / 100) * totalHeight}
-                x2={realChartData?.length * 40}
+                x2={chartWidth}
                 y2={totalHeight - (p / 100) * totalHeight}
                 stroke="#D7E2F0"
                 strokeWidth="1"
@@ -56,7 +100,7 @@ const BarChart = ({ selectedFilter, realChartData, onBarPress }) => {
             <line
               x1={0}
               y1={totalHeight}
-              x2={realChartData?.length * 40}
+              x2={chartWidth}
               y2={totalHeight}
               stroke="#D7E2F0"
               strokeWidth="1"
@@ -64,15 +108,14 @@ const BarChart = ({ selectedFilter, realChartData, onBarPress }) => {
           </svg>
 
           <div className="chart-bars">
-            {realChartData?.map((bar, i) => {
-              let yOffset = 0;
+            {realChartData.map((bar, i) => {
               const currentDaySum = bar.values.reduce(
                 (sum, val) => sum + val,
                 0
               );
-
               let displayValue = 0;
               let displayColor = "#D11B49";
+
               if (selectedFilter !== "All") {
                 const filterIndex = categoryLabels.indexOf(selectedFilter);
                 if (filterIndex !== -1) {
@@ -83,20 +126,21 @@ const BarChart = ({ selectedFilter, realChartData, onBarPress }) => {
                 displayValue = currentDaySum;
               }
 
-              const scaleFactor =
-                selectedFilter === "All"
-                  ? Math.max(
-                      ...realChartData.map((day) =>
-                        day.values.reduce((sum, val) => sum + val, 0)
-                      )
-                    )
-                  : 100;
+              const scaleFactor = selectedFilter === "All" ? maxValueAll : 100;
+              const barHeight =
+                scaleFactor > 0
+                  ? (displayValue / scaleFactor) * totalHeight
+                  : 0;
 
-              const barHeight = (displayValue / scaleFactor) * totalHeight;
+              let yOffset = 0;
 
               return (
-                <div key={i} className="chart-bar-wrapper">
-                  <svg height={totalHeight} width={30}>
+                <div
+                  key={i}
+                  className="chart-bar-wrapper"
+                  style={{ width: `${barWidth}px` }}
+                >
+                  <svg height={totalHeight} width={barWidth}>
                     <g>
                       {selectedFilter === "All"
                         ? bar.values.map((value, j) => {
@@ -105,15 +149,14 @@ const BarChart = ({ selectedFilter, realChartData, onBarPress }) => {
                               currentDaySum > 0
                                 ? (value / currentDaySum) * barHeight
                                 : 0;
-
                             const rect = (
                               <rect
                                 key={j}
                                 x={0}
                                 y={totalHeight - segmentHeight - yOffset}
-                                width={26}
+                                width={barWidth - 4}
                                 height={segmentHeight}
-                                fill={categoryColors[j]}
+                                fill={categoryColors[j % categoryColors.length]}
                                 rx={0}
                                 ry={0}
                                 onClick={() => onBarPress?.(bar.date)}
@@ -126,7 +169,7 @@ const BarChart = ({ selectedFilter, realChartData, onBarPress }) => {
                             <rect
                               x={0}
                               y={totalHeight - barHeight}
-                              width={26}
+                              width={barWidth - 4}
                               height={barHeight}
                               fill={displayColor}
                               rx={0}

@@ -8,7 +8,6 @@ import React, {
 } from "react";
 import {
   Box,
-  Typography,
   List,
   ListItemButton,
   Divider,
@@ -16,7 +15,6 @@ import {
   Paper,
   TextField,
   CircularProgress,
-  Button,
   Snackbar,
   Alert,
   Popover,
@@ -29,6 +27,10 @@ import { createSosSocket } from "../../utils/socket";
 import useAuth from "../../hooks/useAuth";
 import sosChatService from "../../services/sosChatService";
 import { FilterAltOutlined } from "@mui/icons-material";
+import SemiBoldText from "../../components/typography/semiBoldText";
+import RegularText from "../../components/typography/regularText";
+import { FONT_SIZE } from "../../constant/lookUpConstant";
+import NormalButton from "../../components/button/normalButton";
 
 const COLORS = {
   pageBg: "#f7f9fc",
@@ -48,6 +50,7 @@ const COLORS = {
   sendBg: "#deeaff",
   inputBorder: "rgba(0,0,0,0.08)",
 };
+
 const RADIUS = { card: 14, bubble: 12, input: 24 };
 
 const formatTime = (dateStr) =>
@@ -116,15 +119,19 @@ const isSameDay = (a, b) => {
 
 const socket = createSosSocket();
 
+// Keep clientId for correlation between optimistic UI and server echo
 function normalizeMsg(data) {
   return {
     _id: data?._id || `${Date.now()}_${Math.random()}`,
+    clientId: data?.clientId,
     content: data?.content ?? data?.message ?? "",
     userId: String(data?.senderId || data?.userId || ""),
     createdAt: data?.createdAt || new Date().toISOString(),
     status: data?.status || "sent",
   };
 }
+const makeClientId = () =>
+  `c_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
 export default function SosPatients() {
   const therapist = useAuth();
@@ -138,8 +145,8 @@ export default function SosPatients() {
   const [menuAnchor, setMenuAnchor] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // chat store: keyed by roomId
-  const [messages, setMessages] = useState({});
+  // Single active-session messages
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [toast, setToast] = useState({
     open: false,
@@ -156,7 +163,6 @@ export default function SosPatients() {
       setUsers(list);
       setFilteredUsers(list);
     } catch (err) {
-      // eslint-disable-next-line no-console
       console.log("Failed to load caretakers", err);
       setToast({
         open: true,
@@ -187,74 +193,130 @@ export default function SosPatients() {
   const selectUser = useCallback(
     (u) => {
       setSelectedUser(u);
-      if (!u?.roomId) return;
+      if (!u?.roomId) {
+        setMessages([]);
+        return;
+      }
       socket.joinRoom({ roomId: u.roomId, userId: selfId });
       (async () => {
         try {
           const chatHistory = await sosChatService.getChatHistory(u.roomId, 1);
           if (chatHistory?.success) {
             const normalized = (chatHistory.chats || []).map(normalizeMsg);
-            setMessages((prev) => ({ ...prev, [u.roomId]: normalized }));
+            setMessages(normalized);
             socket.markMessageRead({ roomId: u.roomId, userId: selfId });
+          } else {
+            setMessages([]);
           }
         } catch (e) {
-          // eslint-disable-next-line no-console
           console.log("history error", e);
+          setMessages([]);
         }
       })();
     },
     [selfId]
   );
 
+  // leave room on unmount
   useEffect(
     () => () => {
       if (selectedUser?.roomId)
         socket.leaveRoom({ roomId: selectedUser.roomId, userId: selfId });
     },
     []
-  ); // unmount
+  );
 
-  // Socket listeners
   useEffect(() => {
     const handleIncoming = (data) => {
+      const incomingRoomId = data?.roomId || data?.roomid || data?.roomID;
+      if (!selectedUser?.roomId || incomingRoomId !== selectedUser.roomId)
+        return;
+
       const msg = normalizeMsg(data);
-      const rid = data?.roomId;
-      if (!rid) return;
-      setMessages((prev) => ({ ...prev, [rid]: [...(prev[rid] || []), msg] }));
+      const clientId = data?.clientId;
+
+      setMessages((prev) => {
+        if (clientId) {
+          const idx = prev.findIndex(
+            (m) => m.clientId === clientId || m._id === clientId
+          );
+          if (idx !== -1) {
+            const next = prev.slice();
+            next[idx] = { ...prev[idx], ...msg, _id: msg._id || prev[idx]._id };
+            return next;
+          }
+        }
+        return [...prev, msg];
+      });
     };
-    const handleReadAck = () => {
-      const rid = selectedUser?.roomId;
-      if (!rid) return;
-      setMessages((prev) => ({
-        ...prev,
-        [rid]: (prev[rid] || []).map((m) =>
-          m.status === "sent" ? { ...m, status: "read" } : m
-        ),
-      }));
+
+    const handleDeliveredAck = (ack) => {
+      const ackRoomId =
+        ack?.roomId || ack?.roomid || ack?.roomID || selectedUser?.roomId;
+      if (!selectedUser?.roomId || ackRoomId !== selectedUser.roomId) return;
+      const id = ack?._id || ack?.messageId || ack?.clientId;
+
+      setMessages((prev) =>
+        prev.map((m) =>
+          m._id === id || m.clientId === id ? { ...m, status: "delivered" } : m
+        )
+      );
     };
+
+    const handleReadAck = (ack) => {
+      const ackRoomId =
+        ack?.roomId || ack?.roomid || ack?.roomID || selectedUser?.roomId;
+      if (!selectedUser?.roomId || ackRoomId !== selectedUser.roomId) return;
+      const id = ack?._id || ack?.messageId || ack?.clientId;
+
+      setMessages((prev) =>
+        id
+          ? prev.map((m) =>
+              m._id === id || m.clientId === id ? { ...m, status: "read" } : m
+            )
+          : prev.map((m) =>
+              String(m.userId) === String(selfId) ? { ...m, status: "read" } : m
+            )
+      );
+    };
+
     socket.on("receiveMessage", handleIncoming);
+    socket.on("messageDeliveredAck", handleDeliveredAck);
     socket.on("messageReadAck", handleReadAck);
     return () => {
       socket.off("receiveMessage", handleIncoming);
+      socket.off("messageDeliveredAck", handleDeliveredAck);
       socket.off("messageReadAck", handleReadAck);
     };
-  }, [selectedUser?.roomId]);
+  }, [selectedUser?.roomId, selfId]);
 
   const send = useCallback(() => {
     const trimmed = input.trim();
     if (!trimmed || !selectedUser?.roomId) return;
+
+    const clientId = makeClientId();
+    const optimistic = {
+      _id: clientId,
+      clientId,
+      content: trimmed,
+      userId: String(selfId),
+      createdAt: new Date().toISOString(),
+      status: "sent",
+    };
+
+    setMessages((prev) => [...prev, optimistic]);
+
     socket.sendMessage({
       roomId: selectedUser.roomId,
       userId: selfId,
       content: trimmed,
+      clientId,
     });
+
     setInput("");
   }, [input, selectedUser?.roomId, selfId]);
 
-  const currentMsgs = useMemo(
-    () => (selectedUser?.roomId ? messages[selectedUser.roomId] || [] : []),
-    [messages, selectedUser?.roomId]
-  );
+  const currentMsgs = useMemo(() => messages, [messages]);
 
   return (
     <Box
@@ -273,6 +335,7 @@ export default function SosPatients() {
             bgcolor: "#fff",
             display: "flex",
             flexDirection: "column",
+            borderTopLeftRadius: 8,
           }}
         >
           <Box
@@ -284,14 +347,7 @@ export default function SosPatients() {
               borderBottom: "1px solid #ddd",
             }}
           >
-            <Typography
-              sx={{
-                fontWeight: "bold",
-                fontSize: 18,
-              }}
-            >
-              Patients
-            </Typography>
+            <SemiBoldText>Patients</SemiBoldText>
             <IconButton
               size="small"
               aria-label="filter"
@@ -388,17 +444,14 @@ function FilterModal({ anchorEl, open, filter, onClose, onSelect }) {
             borderBottom: "1px solid #ccc",
           }}
         >
-          <Typography
-            sx={{ fontSize: 16, color: "#333", fontWeight: 600, my: 1.5 }}
-          >
-            Filter
-          </Typography>
-          <Button
+          <SemiBoldText>Filter</SemiBoldText>
+          <NormalButton
+            variant="text"
             onClick={() => onSelect("")}
-            sx={{ color: "red", fontWeight: 600, my: 1.5 }}
+            sx={{ color: "red", my: 1.5 }}
           >
             Clear
-          </Button>
+          </NormalButton>
         </Box>
         {[
           { id: "", name: "All" },
@@ -416,9 +469,7 @@ function FilterModal({ anchorEl, open, filter, onClose, onSelect }) {
               "&:hover": { bgcolor: "#eee" },
             }}
           >
-            <Typography sx={{ fontSize: 16, color: "#333" }}>
-              {it.name}
-            </Typography>
+            <RegularText>{it.name}</RegularText>
           </Box>
         ))}
       </Box>
@@ -462,15 +513,15 @@ function PatientList({ users, selfId, selectedUser, onSelect }) {
                   flexShrink: 0,
                 }}
               >
-                <Typography
+                <SemiBoldText
                   sx={{
                     fontSize: 18,
-                    fontWeight: 700,
+                    fontWeight: 600,
                     color: COLORS.avatarText,
                   }}
                 >
                   {String(displayName).charAt(0).toUpperCase()}
-                </Typography>
+                </SemiBoldText>
               </Box>
 
               <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -481,22 +532,8 @@ function PatientList({ users, selfId, selectedUser, onSelect }) {
                     justifyContent: "space-between",
                   }}
                 >
-                  <Typography
-                    sx={{
-                      fontSize: 16,
-                      fontWeight: 600,
-                      color: COLORS.name,
-                      mr: 1,
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {displayName}
-                  </Typography>
-                  <Typography sx={{ fontSize: 12, color: COLORS.sub }}>
-                    {showMessageTime(t)}
-                  </Typography>
+                  <SemiBoldText>{displayName}</SemiBoldText>
+                  <RegularText>{showMessageTime(t)}</RegularText>
                 </Box>
                 <Box
                   sx={{
@@ -506,19 +543,7 @@ function PatientList({ users, selfId, selectedUser, onSelect }) {
                     gap: 1,
                   }}
                 >
-                  <Typography
-                    sx={{
-                      fontSize: 13,
-                      color: isUnreadIncoming ? "#0078d4" : "#6a6a7b",
-                      fontWeight: isUnreadIncoming ? 800 : 400,
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      mr: 1,
-                    }}
-                  >
-                    {preview}
-                  </Typography>
+                  <RegularText>{preview}</RegularText>
                   {unread > 0 && (
                     <Box
                       sx={{
@@ -542,10 +567,8 @@ function PatientList({ users, selfId, selectedUser, onSelect }) {
       })}
       {users.length === 0 && (
         <Box sx={{ p: 3, color: COLORS.sub, textAlign: "center" }}>
-          <Typography>No caretakers found.</Typography>
-          <Typography sx={{ color: COLORS.subLight, fontSize: 12, mt: 0.75 }}>
-            Click Refresh or try again later.
-          </Typography>
+          <SemiBoldText>No caretakers found.</SemiBoldText>
+          <RegularText>Click Refresh or try again later.</RegularText>
         </Box>
       )}
     </List>
@@ -556,13 +579,11 @@ function ChatPane({ selfId, user, messages, onSend, input, setInput }) {
   const bottomRef = useRef(null);
   const scrollBoxRef = useRef(null);
 
-  // auto scroll to bottom on new messages and when user changes
   useEffect(() => {
     if (bottomRef.current)
       bottomRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages, user?._id]);
 
-  // Render messages with date separators and RN styling
   const items = useMemo(() => {
     const out = [];
     for (let i = 0; i < messages.length; i++) {
@@ -583,9 +604,9 @@ function ChatPane({ selfId, user, messages, onSend, input, setInput }) {
                 borderRadius: 20,
               }}
             >
-              <Typography sx={{ fontSize: 12, fontWeight: 500, color: "#555" }}>
+              <RegularText color={"primary.main"}>
                 {formatDateSeparator(m.createdAt)}
-              </Typography>
+              </RegularText>
             </Box>
           </Box>
         );
@@ -610,11 +631,7 @@ function ChatPane({ selfId, user, messages, onSend, input, setInput }) {
                 boxShadow: "0px 1px 3px rgba(0,0,0,0.05)",
               }}
             >
-              <Typography
-                sx={{ fontSize: 15, color: isSelf ? "#000" : "#222" }}
-              >
-                {m.content}
-              </Typography>
+              <RegularText>{m.content}</RegularText>
               <Box
                 sx={{
                   mt: 0.5,
@@ -624,9 +641,7 @@ function ChatPane({ selfId, user, messages, onSend, input, setInput }) {
                   gap: 0.5,
                 }}
               >
-                <Typography sx={{ fontSize: 11, color: "#000" }}>
-                  {formatTime(m.createdAt)}
-                </Typography>
+                <RegularText>{formatTime(m.createdAt)}</RegularText>
                 {isSelf &&
                   (m.status === "read" ? (
                     <DoneAllIcon sx={{ fontSize: 16, color: "#0078d4" }} />
@@ -649,8 +664,23 @@ function ChatPane({ selfId, user, messages, onSend, input, setInput }) {
       sx={{
         display: "flex",
         flexDirection: "column",
+        height: "calc(100vh - 90px)",
       }}
     >
+      <Box
+        sx={{
+          p: 2.6,
+          bgcolor: "#fff",
+          boxShadow: "0px 1px 3px rgba(0,0,0,0.05)",
+          borderTopRightRadius: 8,
+        }}
+      >
+        <Box sx={{ display: "flex", alignItems: "center" }}>
+          <SemiBoldText>
+            {user?.patientName || "Patient Not Selected"}
+          </SemiBoldText>
+        </Box>
+      </Box>
       <Box
         ref={scrollBoxRef}
         sx={{
@@ -673,7 +703,7 @@ function ChatPane({ selfId, user, messages, onSend, input, setInput }) {
               color: COLORS.sub,
             }}
           >
-            <Typography>Select a patient</Typography>
+            <SemiBoldText>Select a patient</SemiBoldText>
           </Box>
         )}
         <div ref={bottomRef} />
@@ -696,7 +726,6 @@ function ChatPane({ selfId, user, messages, onSend, input, setInput }) {
               alignItems: "center",
               gap: 1,
               px: 1.25,
-              py: 1,
               borderRadius: RADIUS.input,
               border: `1px solid ${COLORS.inputBorder}`,
               boxShadow: "0 4px 8px rgba(0,0,0,0.08)",
@@ -716,7 +745,8 @@ function ChatPane({ selfId, user, messages, onSend, input, setInput }) {
               InputProps={{
                 sx: {
                   "& textarea": {
-                    fontSize: 15,
+                    fontFamily: "regular",
+                    fontSize: FONT_SIZE.BODY,
                     color: "#000",
                   },
                 },

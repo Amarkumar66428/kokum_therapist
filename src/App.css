@@ -1,3 +1,13 @@
+@font-face {
+  font-family: "regular";
+  src: url("/src/assets/fonts/Assistant-Regular.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "semiBold";
+  src: url("/src/assets/fonts/Assistant-SemiBold.ttf") format("truetype");
+}
+
 #root {
   height: 100vh;
   width: 100%;
@@ -9,6 +19,27 @@
   padding: 0;
   margin: 0;
   box-sizing: border-box;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  font-family: "regular";
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "regular";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f5f5f5;
 }
 
 *::-webkit-scrollbar {

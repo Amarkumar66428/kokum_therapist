@@ -39,6 +39,8 @@ import usePatient from "../../hooks/usePatient";
 import suggestionService from "../../services/suggestions";
 import ChildDetailCard from "../../components/childDetailCard";
 import renderFormattedText from "../../components/aiResponse";
+import { FilterAltOutlined } from "@mui/icons-material";
+import SuggestionDetails from "../../components/suggestionDetails";
 
 const capitalize = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : "");
 const formatToDateAndTime = (d) =>
@@ -218,20 +220,6 @@ export default function AISuggestionsListPage() {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <AppBar
-        position="sticky"
-        color="inherit"
-        elevation={0}
-        sx={{
-          boxShadow: "none",
-          borderRadius: 2,
-        }}
-      >
-        <Toolbar sx={{ px: 2 }}>
-          <Typography>AI Suggestions</Typography>
-        </Toolbar>
-      </AppBar>
-
       <Container maxWidth="sm" sx={{ py: 2.5 }}>
         <ChildDetailCard
           childData={{
@@ -248,21 +236,21 @@ export default function AISuggestionsListPage() {
           direction="row"
           alignItems="center"
           justifyContent="space-between"
-          sx={{ px: 2, py: 1 }}
+          sx={{ px: 2, borderBottom: "1px solid #e0e0e0" }}
         >
           <Tabs
             value={activeTab}
             onChange={handleTabChange}
             variant="scrollable"
-            allowScrollButtonsMobile
             sx={{
               "& .MuiTab-root": {
-                minHeight: 32,
                 textTransform: "none",
-                fontSize: 14,
+                fontSize: 16,
                 color: "#7d7d7e",
               },
-              "& .Mui-selected": { color: "#0A0A0A", fontWeight: 800 },
+              "& .Mui-selected": {
+                color: "#0A0A0A",
+              },
             }}
           >
             <Tab value="daily" label="Daily Suggestions" />
@@ -273,14 +261,20 @@ export default function AISuggestionsListPage() {
             <DatePicker
               value={selectedDate}
               onChange={(v) => v && handleSelectDate(v)}
-              format="MMM D, YYYY"
+              format="D MM, YYYY"
+              sx={{
+                fontSize: 12,
+                "& .MuiPickersInputBase-sectionsContainer": {
+                  padding: 1.5,
+                },
+              }}
             />
 
             <IconButton
               onClick={handleFilterClick}
               sx={{ position: "relative" }}
             >
-              <FilterListIcon sx={{ color: "#ff5a82" }} />
+              <FilterAltOutlined sx={{ color: "#ff5a82" }} />
               {filter && (
                 <Box
                   sx={{
@@ -659,116 +653,11 @@ export default function AISuggestionsListPage() {
           </Stack>
         )}
       </Container>
-
-      {/* Details Modal */}
-      <Modal
+      <SuggestionDetails
+        data={suggestionDetails.data}
         open={suggestionDetails.open}
-        onClose={() => setSuggestionDetails({ data: null, open: false })}
-        closeAfterTransition
-        slots={{ backdrop: Backdrop }}
-        slotProps={{ backdrop: { timeout: 200 } }}
-      >
-        <Fade in={suggestionDetails.open}>
-          <Box
-            role="dialog"
-            aria-modal="true"
-            sx={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              width: { xs: "90%", sm: 520 },
-              bgcolor: "#fff",
-              borderRadius: 2,
-              boxShadow: 6,
-              p: 2,
-            }}
-          >
-            <Stack
-              direction="row"
-              alignItems="center"
-              justifyContent="space-between"
-              sx={{ mb: 1 }}
-            >
-              <Typography variant="h6" fontWeight={700}>
-                Suggestion Details
-              </Typography>
-              <Button
-                onClick={() =>
-                  setSuggestionDetails({ data: null, open: false })
-                }
-                size="small"
-                color="inherit"
-              >
-                ✕
-              </Button>
-            </Stack>
-            <Divider sx={{ mb: 2 }} />
-
-            <Stack spacing={1}>
-              <Typography
-                sx={{ fontSize: 14, fontWeight: 500, color: "#666666ff" }}
-              >
-                Suggestion Type
-              </Typography>
-              <Typography sx={{ fontSize: 13 }}>
-                {capitalize(
-                  suggestionDetails?.data?.suggestionType || "Specific"
-                )}
-              </Typography>
-
-              <Typography
-                sx={{ fontSize: 14, fontWeight: 500, color: "#666666ff" }}
-              >
-                Generated At
-              </Typography>
-              <Typography sx={{ fontSize: 13 }}>
-                {formatToDateAndTime(
-                  suggestionDetails?.data?.generatedAt ||
-                    suggestionDetails?.data?.createdAt
-                )}
-              </Typography>
-
-              <Typography
-                sx={{ fontSize: 14, fontWeight: 500, color: "#666666ff" }}
-              >
-                Sent for Review On
-              </Typography>
-              <Typography sx={{ fontSize: 13 }}>
-                {formatToDateAndTime(suggestionDetails?.data?.sentAt) || "N/A"}
-              </Typography>
-
-              <Typography
-                sx={{ fontSize: 14, fontWeight: 500, color: "#666666ff" }}
-              >
-                Status
-              </Typography>
-              <Typography sx={{ fontSize: 13 }}>
-                {suggestionDetails?.data?.status
-                  ? `${capitalize(
-                      suggestionDetails?.data?.status
-                    )} on ${formatToDateAndTime(
-                      suggestionDetails?.data?.updateStatusAt
-                    )}`
-                  : "N/A"}
-              </Typography>
-
-              <Typography
-                sx={{ fontSize: 14, fontWeight: 500, color: "#666666ff" }}
-              >
-                FeedBack On
-              </Typography>
-              <Typography sx={{ fontSize: 13 }}>
-                {suggestionDetails?.data?.feedback
-                  ? `${formatToDateAndTime(
-                      suggestionDetails?.data?.feedbackAt
-                    )}`
-                  : "N/A"}
-              </Typography>
-            </Stack>
-          </Box>
-        </Fade>
-      </Modal>
+        close={() => setSuggestionDetails({ data: null, open: false })}
+      />
     </LocalizationProvider>
   );
 }

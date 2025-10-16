@@ -14,6 +14,9 @@ import {
   Backdrop,
   CircularProgress,
   LinearProgress,
+  AppBar,
+  Toolbar,
+  Stack,
 } from "@mui/material";
 import { Visibility, VisibilityOff, AttachFile } from "@mui/icons-material";
 import { useFormik } from "formik";
@@ -22,7 +25,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 import api from "../../utils/axios";
 
-// ---- Validation (kept close to original) ----
 const nameRule = Yup.string()
   .trim()
   .min(2, "Too short")
@@ -30,8 +32,6 @@ const nameRule = Yup.string()
   .matches(/^[\p{L}\p{M}\s'.-]+$/u, "Letters only");
 
 const schema = Yup.object({
-  // In web version, patientId is optional in create flow (as per RN) but required in update path
-  // We’ll validate patientId presence at submit time for edit mode, not here
   patientId: Yup.string().trim().max(40),
   patientName: nameRule.required("Patient name is required"),
   caretakerName: nameRule.optional(),
@@ -68,7 +68,7 @@ const schema = Yup.object({
       ];
       return ok.includes(f.type);
     })
-    .optional(),
+    .nullable(),
 });
 
 const initialValues = {
@@ -91,14 +91,9 @@ function BasicDetails({ onNext }) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // route params from React Router
-  // Expect: { prefillFrom, edit, bundle, patientId }
   const routeState = location?.state || {};
-  const isEdit =
-    routeState?.prefillFrom === "childProfile" ||
-    routeState?.edit === true ||
-    !!routeState?.bundle ||
-    !!routeState?.patientId;
+  const patientId = routeState?.patientId;
+  const isEdit = patientId || routeState?.mode === "edit";
 
   const [showPassword, setShowPassword] = useState(false);
   const [prefilling, setPrefilling] = useState(false);
@@ -114,7 +109,7 @@ function BasicDetails({ onNext }) {
     validationSchema: schema,
     validateOnBlur: true,
     validateOnChange: false,
-    enableReinitialize: true, // allow set when prefilling
+    enableReinitialize: true,
     onSubmit: async (values) => {
       try {
         setSubmitting(true);
@@ -132,7 +127,6 @@ function BasicDetails({ onNext }) {
         let pidForNext = values.patientId;
 
         if (values.file) {
-          // Browser File already has name/type/size
           body.append("diagnosisReportFile", values.file);
         }
 
@@ -150,12 +144,10 @@ function BasicDetails({ onNext }) {
           "";
 
         if (pidForNext) {
-          // AsyncStorage equivalent
           localStorage.setItem("createdPatientId", String(pidForNext));
         }
         setToast({ open: true, msg: "Details saved.", severity: "success" });
 
-        // Next screen with parameters similar to RN
         onNext?.(values);
         navigate("/managePatient/childDetails", {
           state: {
@@ -189,27 +181,23 @@ function BasicDetails({ onNext }) {
     setValues,
   } = formik;
 
-  // Prefill on mount/focus or when dependencies change
-  useEffect(() => {
-    let active = true;
-    const doPrefill = async () => {
-      setPrefilling(true);
-
-      // Clear any previously chosen file on each open (mirrors RN)
-      setFieldValue("file", null, false);
-
-      if (!active) return;
-      setValues({ ...initialValues });
-
+  const fetchPatient = async () => {
+    setPrefilling(true);
+    try {
+      const params = { id: patientId };
+      const { data } = await api.get(`/basic-details`, { params });
+      const patient = data?.data ?? data;
+      setValues(patient);
+    } catch (err) {
+      console.error("Error fetching patient:", err);
+    } finally {
       setPrefilling(false);
-    };
+    }
+  };
 
-    doPrefill();
-    return () => {
-      active = false;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [routeState?.patientId]);
+  useEffect(() => {
+    if (isEdit) fetchPatient();
+  }, [isEdit]);
 
   const field = (name) => ({
     name,
@@ -230,229 +218,242 @@ function BasicDetails({ onNext }) {
   );
 
   return (
-    <Box component="form" onSubmit={handleSubmit} noValidate>
-      {/* Prefill loading indicator */}
-      {prefilling && <LinearProgress sx={{ mb: 2 }} />}
-
-      <Typography variant="h6" sx={{ mb: 1.5 }}>
-        {isEdit ? "Edit Basic Details" : "Basic Details"}
-      </Typography>
-
-      <Paper
+    <Box>
+      <AppBar
+        position="sticky"
+        color="inherit"
         elevation={0}
         sx={{
-          mx: "auto",
-          p: { xs: 2, sm: 3, md: 4 },
-          borderRadius: 3,
-          border: "1px solid",
-          borderColor: "divider",
-          bgcolor: "background.paper",
+          boxShadow: "none",
+          borderRadius: 2,
         }}
       >
-        <Grid container spacing={2.5}>
-          {/* Patient ID only in create mode, like RN */}
-          {!isEdit && (
-            <Grid size={GridSize}>
-              <Label>Patient ID</Label>
-              <TextField
-                placeholder="Enter Patient ID"
-                {...field("patientId")}
-              />
-            </Grid>
-          )}
-
-          <Grid size={GridSize}>
-            <Label>Patient Name</Label>
-            <TextField
-              placeholder="Enter Patient Name"
-              {...field("patientName")}
-            />
-          </Grid>
-
-          <Grid size={GridSize}>
-            <Label>Patient’s Caretaker Name</Label>
-            <TextField
-              placeholder="Enter Caretaker Name"
-              {...field("caretakerName")}
-            />
-          </Grid>
-
-          <Grid size={GridSize}>
-            <Label>Patient’s Father Name</Label>
-            <TextField
-              placeholder="Enter Father Name"
-              {...field("fatherName")}
-            />
-          </Grid>
-
-          <Grid size={GridSize}>
-            <Label>Patient’s Mother Name</Label>
-            <TextField
-              placeholder="Enter Mother Name"
-              {...field("motherName")}
-            />
-          </Grid>
-
-          <Grid size={GridSize}>
-            <Label>Location</Label>
-            <TextField placeholder="Enter Location" {...field("location")} />
-          </Grid>
-
-          <Grid size={GridSize}>
-            <Label>Email</Label>
-            <TextField
-              type="email"
-              placeholder="Enter Email"
-              autoComplete="email"
-              {...field("email")}
-            />
-          </Grid>
-
-          <Grid size={GridSize}>
-            <Label>{isEdit ? "New Password (optional)" : "Password"}</Label>
-            <TextField
-              placeholder="Enter Password"
-              type={showPassword ? "text" : "password"}
-              autoComplete="new-password"
-              {...field("password")}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      aria-label="toggle password visibility"
-                      onClick={() => setShowPassword((s) => !s)}
-                    >
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-            />
-          </Grid>
-
-          <Grid size={GridSize}>
-            <Label>Diagnosis Report</Label>
-            <TextField
-              placeholder="Enter"
-              multiline
-              minRows={3}
-              {...field("diagnosisReport")}
-            />
-          </Grid>
-
-          {/* File uploader with edit-mode hint */}
-          <Grid size={GridSize}>
-            <Label>Attach File</Label>
-            <input
-              ref={fileRef}
-              type="file"
-              hidden
-              // Match RN permissive types, but validation still enforces allowed set
-              accept=".pdf,.png,.jpg,.jpeg,.webp,.doc,.docx,.txt,image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
-              onChange={(e) => {
-                const f = e.currentTarget.files?.[0] || null;
-                // Attach browser File directly; Yup will validate size/type
-                setFieldValue("file", f);
-              }}
-            />
-            <Grid container spacing={1} alignItems="center">
-              <Grid item xs="auto">
-                <Button
-                  variant="outlined"
-                  startIcon={<AttachFile />}
-                  onClick={() => fileRef.current?.click()}
-                >
-                  {values.file ? "Change File" : "Attach File"}
-                </Button>
-              </Grid>
-              <Grid item xs>
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{
-                    lineHeight: "40px",
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                  }}
-                >
-                  {values.file
-                    ? values.file.name
-                    : "PDF/Image/Doc/Txt (max 5MB)"}
-                </Typography>
-              </Grid>
-              <Grid item xs={12}>
-                <Typography
-                  variant="caption"
-                  color={errors.file ? "error" : "text.disabled"}
-                >
-                  {errors.file ? String(errors.file) : " "}
-                </Typography>
-              </Grid>
-            </Grid>
-          </Grid>
-
-          <Grid item xs={12}>
-            <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 1 }}>
-              <Button
-                type="submit"
-                variant="outlined"
-                disabled={submitting}
-                sx={{
-                  py: 1,
-                  px: 8,
-                  borderRadius: 10,
-                  boxShadow: 1,
-                  textTransform: "none",
-                  color: "primary.success",
-                  borderColor: "primary.success",
-                  fontWeight: 500,
-                  fontSize: "1em",
-                }}
-              >
-                {isEdit ? "Save & Next" : "Next"}
-              </Button>
-            </Box>
-          </Grid>
-        </Grid>
-      </Paper>
-
-      {/* Submit Backdrop */}
-      <Backdrop open={submitting} sx={{ zIndex: (t) => t.zIndex.modal + 1 }}>
-        <Box
+        <Toolbar sx={{ px: 2 }}>
+          <Typography>
+            {isEdit ? "Edit Basic Details" : "Basic Details"}
+          </Typography>
+        </Toolbar>
+      </AppBar>
+      <Box component="form" onSubmit={handleSubmit} noValidate>
+        {prefilling && <LinearProgress sx={{ mb: 2 }} />}
+        <Paper
+          elevation={0}
           sx={{
-            bgcolor: "background.paper",
-            p: 2,
+            mt: 2,
+            mx: "auto",
+            p: { xs: 2, sm: 3, md: 4 },
             borderRadius: 2,
-            display: "flex",
-            alignItems: "center",
-            gap: 2,
-            border: "1px solid",
-            borderColor: "divider",
           }}
         >
-          <CircularProgress size={24} />
-          <Typography>Saving...</Typography>
-        </Box>
-      </Backdrop>
+          <Grid container spacing={2.5}>
+            {!isEdit && (
+              <Grid size={GridSize}>
+                <Label>Patient ID</Label>
+                <TextField
+                  placeholder="Enter Patient ID"
+                  {...field("patientId")}
+                />
+              </Grid>
+            )}
 
-      {/* Toasts */}
-      <Snackbar
-        open={toast.open}
-        autoHideDuration={3000}
-        onClose={() => setToast((s) => ({ ...s, open: false }))}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <MuiAlert
+            <Grid size={GridSize}>
+              <Label>Patient Name</Label>
+              <TextField
+                placeholder="Enter Patient Name"
+                {...field("patientName")}
+              />
+            </Grid>
+
+            <Grid size={GridSize}>
+              <Label>Patient’s Caretaker Name</Label>
+              <TextField
+                placeholder="Enter Caretaker Name"
+                {...field("caretakerName")}
+              />
+            </Grid>
+
+            <Grid size={GridSize}>
+              <Label>Patient’s Father Name</Label>
+              <TextField
+                placeholder="Enter Father Name"
+                {...field("fatherName")}
+              />
+            </Grid>
+
+            <Grid size={GridSize}>
+              <Label>Patient’s Mother Name</Label>
+              <TextField
+                placeholder="Enter Mother Name"
+                {...field("motherName")}
+              />
+            </Grid>
+
+            <Grid size={GridSize}>
+              <Label>Location</Label>
+              <TextField placeholder="Enter Location" {...field("location")} />
+            </Grid>
+
+            <Grid size={GridSize}>
+              <Label>Email</Label>
+              <TextField
+                type="email"
+                placeholder="Enter Email"
+                autoComplete="email"
+                {...field("email")}
+              />
+            </Grid>
+
+            <Grid size={GridSize}>
+              <Label>{isEdit ? "New Password (optional)" : "Password"}</Label>
+              <TextField
+                placeholder="Enter Password"
+                type={showPassword ? "text" : "password"}
+                autoComplete="new-password"
+                {...field("password")}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="toggle password visibility"
+                        onClick={() => setShowPassword((s) => !s)}
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Grid>
+
+            <Grid size={GridSize}>
+              <Label>Diagnosis Report</Label>
+              <TextField
+                placeholder="Enter"
+                multiline
+                minRows={3}
+                {...field("diagnosisReport")}
+              />
+            </Grid>
+
+            {/* File uploader with edit-mode hint */}
+            <Grid size={GridSize}>
+              <Label>Attach File</Label>
+              <input
+                ref={fileRef}
+                type="file"
+                hidden
+                // Match RN permissive types, but validation still enforces allowed set
+                accept=".pdf,.png,.jpg,.jpeg,.webp,.doc,.docx,.txt,image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
+                onChange={(e) => {
+                  const f = e.currentTarget.files?.[0] || null;
+                  // Attach browser File directly; Yup will validate size/type
+                  setFieldValue("file", f);
+                }}
+              />
+              <Grid container spacing={1} alignItems="center">
+                <Grid size={{ xs: "auto" }}>
+                  <Button
+                    variant="outlined"
+                    startIcon={<AttachFile />}
+                    onClick={() => fileRef.current?.click()}
+                  >
+                    {values.file ? "Change File" : "Attach File"}
+                  </Button>
+                </Grid>
+                <Grid size={{ xs: "auto" }}>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{
+                      lineHeight: "40px",
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
+                  >
+                    {values.file
+                      ? values.file.name
+                      : "PDF/Image/Doc/Txt (max 5MB)"}
+                  </Typography>
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                  <Typography
+                    variant="caption"
+                    color={errors.file ? "error" : "text.disabled"}
+                  >
+                    {errors.file ? String(errors.file) : " "}
+                  </Typography>
+                </Grid>
+              </Grid>
+            </Grid>
+
+            <Grid size={{ xs: 12 }}>
+              <Stack
+                direction={{ xs: "column-reverse", sm: "row" }}
+                spacing={1.5}
+                justifyContent="flex-end"
+                sx={{ mt: 1 }}
+              >
+                <Button
+                  type="submit"
+                  variant="outlined"
+                  size="large"
+                  sx={{
+                    py: 1,
+                    px: 8,
+                    borderRadius: 10,
+                    boxShadow: 1,
+                    textTransform: "none",
+                    color: "primary.success",
+                    borderColor: "primary.success",
+                    fontWeight: 500,
+                    fontSize: "1em",
+                  }}
+                >
+                  Save & Next
+                </Button>
+              </Stack>
+            </Grid>
+          </Grid>
+        </Paper>
+
+        {/* Submit Backdrop */}
+        <Backdrop open={submitting} sx={{ zIndex: (t) => t.zIndex.modal + 1 }}>
+          <Box
+            sx={{
+              bgcolor: "background.paper",
+              p: 2,
+              borderRadius: 2,
+              display: "flex",
+              alignItems: "center",
+              gap: 2,
+              border: "1px solid",
+              borderColor: "divider",
+            }}
+          >
+            <CircularProgress size={24} />
+            <Typography>Saving...</Typography>
+          </Box>
+        </Backdrop>
+
+        {/* Toasts */}
+        <Snackbar
+          open={toast.open}
+          autoHideDuration={3000}
           onClose={() => setToast((s) => ({ ...s, open: false }))}
-          severity={toast.severity}
-          elevation={6}
-          variant="filled"
-          sx={{ width: "100%" }}
+          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
         >
-          {toast.msg}
-        </MuiAlert>
-      </Snackbar>
+          <MuiAlert
+            onClose={() => setToast((s) => ({ ...s, open: false }))}
+            severity={toast.severity}
+            elevation={6}
+            variant="filled"
+            sx={{ width: "100%" }}
+          >
+            {toast.msg}
+          </MuiAlert>
+        </Snackbar>
+      </Box>
     </Box>
   );
 }
