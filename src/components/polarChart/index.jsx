@@ -11,17 +11,20 @@ import { ChartColors } from "../../constant/appColors";
 
 ChartJS.register(RadialLinearScale, ArcElement, Tooltip, Legend);
 
-// Outer text labels plugin (unchanged)
 const OuterLabelPlugin = {
   id: "outerLabelPlugin",
   afterDatasetsDraw(chart, _args, opts) {
     const { ctx, chartArea, scales } = chart;
     const meta = chart.getDatasetMeta(0);
     if (!meta?.data) return;
+
     const r = scales.r;
     const cx = (chartArea.left + chartArea.right) / 2;
     const cy = (chartArea.top + chartArea.bottom) / 2;
     const radius = r.drawingArea + (opts.offset || 18);
+
+    const labels = chart.data.labels || [];
+    const values = chart.data.datasets[0]?.data || [];
 
     ctx.save();
     ctx.textAlign = "center";
@@ -31,18 +34,53 @@ const OuterLabelPlugin = {
     }`;
     ctx.fillStyle = opts.color || "#333";
 
-    const labels = chart.data.labels || [];
+    const wrapLabel = (label, maxChars = 10) => {
+      const words = label.split(" ");
+      const lines = [];
+      let currentLine = "";
+
+      for (const word of words) {
+        if ((currentLine + word).length <= maxChars) {
+          currentLine += (currentLine ? " " : "") + word;
+        } else {
+          lines.push(currentLine);
+          currentLine = word;
+        }
+      }
+      if (currentLine) lines.push(currentLine);
+      return lines;
+    };
+
     meta.data.forEach((arc, i) => {
       const mid = (arc.startAngle + arc.endAngle) / 2;
       const x = cx + Math.cos(mid) * radius;
       const y = cy + Math.sin(mid) * radius;
-      ctx.fillText(labels[i] ?? "", x, y);
+
+      const label = labels[i] ?? "";
+      const value = values[i] ?? 0;
+
+      // Wrap text intelligently (by words, not chars)
+      const lines = wrapLabel(label, 10);
+      // Add percentage as last line
+      lines.push(`${value}%`);
+
+      const lineHeight = opts.lineHeight || 13;
+      const totalHeight = lines.length * lineHeight;
+
+      lines.forEach((line, idx) => {
+        ctx.fillText(
+          line,
+          x,
+          y - totalHeight / 2 + idx * lineHeight + lineHeight / 2
+        );
+      });
     });
+
     ctx.restore();
   },
 };
 
-// Plugin to draw black borders for all sectors and the outer circle
+// Plugin to draw black borders
 const BlackBorderPlugin = {
   id: "blackBorderPlugin",
   afterDraw(chart, _args, opts) {
@@ -61,12 +99,12 @@ const BlackBorderPlugin = {
     ctx.strokeStyle = opts.color || "#000";
     ctx.lineWidth = opts.lineWidth || 1.5;
 
-    // Draw outer circle border (full 100%)
+    // Draw outer circle
     ctx.beginPath();
     ctx.arc(cx, cy, outerRadius, 0, Math.PI * 2);
     ctx.stroke();
 
-    // Draw each sector divider line
+    // Draw divider lines
     meta.data.forEach((arc) => {
       const start = arc.startAngle;
       ctx.beginPath();
@@ -86,16 +124,16 @@ ChartJS.register(OuterLabelPlugin, BlackBorderPlugin);
 
 const VALUES = [50, 50, 50, 50, 50, 50, 50, 50, 50, 50];
 const LABELS = [
-  "Abnormal Posture",
   "Poor Eye Contact",
-  "Tics and Fidgets",
-  "Aggression",
-  "Depression",
-  "Fixations",
   "Abnormal Flat Speech",
-  "Noise Sensitivity",
-  "Social Difficulty",
   "Anxiety",
+  "Aggression",
+  "Noise Sensitivity",
+  "Fixations",
+  "Social Difficulty",
+  "Depression",
+  "Tics and Fidgets",
+  "Abnormal Postures",
 ];
 
 export default function PolarChart({ values }) {
@@ -111,14 +149,14 @@ export default function PolarChart({ values }) {
         },
       ],
     }),
-    []
+    [values]
   );
 
   const options = useMemo(
     () => ({
       maintainAspectRatio: false,
       responsive: true,
-      layout: { padding: 26 },
+      layout: { padding: 30 },
       scales: {
         r: {
           beginAtZero: true,
@@ -134,26 +172,30 @@ export default function PolarChart({ values }) {
         legend: { display: false },
         tooltip: {
           enabled: true,
-          callbacks: { label: (ctx) => `${LABELS[ctx.dataIndex]}` },
+          callbacks: {
+            label: (ctx) => `${LABELS[ctx.dataIndex]}: ${ctx.formattedValue}%`,
+          },
         },
-        outerLabelPlugin: { offset: 18, fontSize: 10, color: "#333" },
+        outerLabelPlugin: {
+          offset: 18,
+          fontSize: 10,
+          color: "#000",
+          fontFamily: "regular",
+        },
         blackBorderPlugin: { color: "#000", lineWidth: 1.2 },
       },
       animation: { duration: 600 },
-      hover: { mode: null }, // disable hover scaling
+      hover: { mode: null },
       elements: {
-        arc: {
-          hoverOffset: 0, // no size increase on hover
-        },
+        arc: { hoverOffset: 0 },
       },
     }),
     []
   );
 
   return (
-    <div style={{ width: 260, height: 180 }}>
-      {" "}
-      <PolarArea data={data} options={options} />{" "}
+    <div style={{ width: 280, height: 240 }}>
+      <PolarArea data={data} options={options} />
     </div>
   );
 }

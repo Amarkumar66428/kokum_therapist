@@ -96,7 +96,7 @@ const Header = ({
         paddingX: 0,
       }}
     >
-      <Toolbar>
+      <Toolbar sx={{ position: "relative" }}>
         <Box
           sx={{ flexGrow: 1, display: "flex", alignItems: "center", gap: 2 }}
         >
@@ -178,8 +178,6 @@ const Header = ({
               </RoundedIconButton>
             </Box>
           )}
-
-          {isPatientView && <PatientHeaderTabs />}
         </Box>
         <Box>
           {!isPatientView ? (
@@ -231,6 +229,18 @@ const Header = ({
               </RoundedIconButton>
             </Box>
           )}
+        </Box>
+        <Box
+          sx={{
+            position: "absolute",
+            right: "50%",
+            transform: "translateX(50%)",
+            "@media (max-width: 720px)": {
+              display: "none",
+            },
+          }}
+        >
+          {isPatientView && <PatientHeaderTabs />}
         </Box>
       </Toolbar>
     </AppBar>

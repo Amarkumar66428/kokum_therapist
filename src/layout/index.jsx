@@ -50,7 +50,7 @@ const AppLayout = ({
           p: 1,
           mt: 8,
           mx: 1,
-          bgcolor: "#f9f9fb",
+          bgcolor: "background.default",
           borderRadius: 2,
           height: "calc(100vh - 74px)",
           overflowY: "auto",

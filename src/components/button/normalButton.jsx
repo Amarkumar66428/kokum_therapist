@@ -10,6 +10,7 @@ const NormalButton = ({ children, variant, onClick, sx = {}, ...rest }) => {
       sx={{
         fontFamily: "regular",
         fontSize: sx.fontSize || FONT_SIZE.BODY,
+        textTransform: "none",
         ...sx,
       }}
       {...rest}

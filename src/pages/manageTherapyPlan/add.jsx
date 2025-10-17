@@ -263,50 +263,55 @@ export default function TherapyPlanPage() {
         </Box>
 
         <Stack spacing={2}>
-          {/* Date & Times */}
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, md: 4 }}>
-              <SemiBoldText>Date</SemiBoldText>
-              <DatePicker
-                value={selectedDate}
-                onChange={(d) => d && setSelectedDate(d)}
-                format="MMM D, YYYY"
-                sx={{
-                  width: "100%",
-                  fontSize: 12,
-                  "& .MuiPickersInputBase-sectionsContainer": {
-                    padding: 1.5,
-                  },
-                }}
-              />
+              <Stack spacing={2}>
+                <SemiBoldText>Date</SemiBoldText>
+                <DatePicker
+                  value={selectedDate}
+                  onChange={(d) => d && setSelectedDate(d)}
+                  format="MMM D, YYYY"
+                  sx={{
+                    width: "100%",
+                    fontSize: 12,
+                    "& .MuiPickersInputBase-sectionsContainer": {
+                      padding: 1.5,
+                    },
+                  }}
+                />
+              </Stack>
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
-              <SemiBoldText>Start Time</SemiBoldText>
-              <TimePicker
-                value={startTime}
-                onChange={(t) => t && setStartTime(t)}
-                sx={{
-                  width: "100%",
-                  fontSize: 12,
-                  "& .MuiPickersInputBase-sectionsContainer": {
-                    padding: 1.5,
-                  },
-                }}
-              />
+              <Stack spacing={2}>
+                <SemiBoldText>Start Time</SemiBoldText>
+                <TimePicker
+                  value={startTime}
+                  onChange={(t) => t && setStartTime(t)}
+                  sx={{
+                    width: "100%",
+                    fontSize: 12,
+                    "& .MuiPickersInputBase-sectionsContainer": {
+                      padding: 1.5,
+                    },
+                  }}
+                />
+              </Stack>
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
-              <SemiBoldText>End Time</SemiBoldText>
-              <TimePicker
-                value={endTime}
-                onChange={(t) => t && setEndTime(t)}
-                sx={{
-                  width: "100%",
-                  fontSize: 12,
-                  "& .MuiPickersInputBase-sectionsContainer": {
-                    padding: 1.5,
-                  },
-                }}
-              />
+              <Stack spacing={2}>
+                <SemiBoldText>End Time</SemiBoldText>
+                <TimePicker
+                  value={endTime}
+                  onChange={(t) => t && setEndTime(t)}
+                  sx={{
+                    width: "100%",
+                    fontSize: 12,
+                    "& .MuiPickersInputBase-sectionsContainer": {
+                      padding: 1.5,
+                    },
+                  }}
+                />
+              </Stack>
             </Grid>
           </Grid>
 
@@ -345,10 +350,14 @@ export default function TherapyPlanPage() {
               />
               <NormalButton
                 variant="text"
-                onClick={() => setShowShortComment((s) => !s)}
-                sx={{ color: PALETTE.accentPink }}
+                onClick={() => {
+                  if (!showShortComment) {
+                    setShowShortComment(true);
+                  }
+                }}
+                sx={{ color: "primary.hlt_main" }}
               >
-                {showShortComment ? "Hide Comment" : "Add Comment"}
+                {showShortComment ? "Comment" : "Add Comment"}
               </NormalButton>
               {showShortComment && (
                 <NormalInput
@@ -357,7 +366,14 @@ export default function TherapyPlanPage() {
                   fullWidth
                   placeholder="Short-term goal comment"
                   value={shortTermComment}
-                  onChange={(e) => setShortTermComment(e.target.value)}
+                  onChange={(e) => {
+                    if (!e.target.value) {
+                      setShowShortComment(false);
+                      setShortTermComment("");
+                    } else {
+                      setShortTermComment(e.target.value);
+                    }
+                  }}
                   sx={{ mt: 1 }}
                 />
               )}
@@ -382,10 +398,14 @@ export default function TherapyPlanPage() {
               />
               <NormalButton
                 variant="text"
-                onClick={() => setShowLongComment((s) => !s)}
-                sx={{ color: PALETTE.accentPink }}
+                onClick={() => {
+                  if (!showLongComment) {
+                    setShowLongComment(true);
+                  }
+                }}
+                sx={{ color: "primary.hlt_main" }}
               >
-                {showLongComment ? "Hide Comment" : "Add Comment"}
+                {showLongComment ? "Comment" : "Add Comment"}
               </NormalButton>
               {showLongComment && (
                 <NormalInput
@@ -394,7 +414,14 @@ export default function TherapyPlanPage() {
                   fullWidth
                   placeholder="Long-term goal comment"
                   value={longTermComment}
-                  onChange={(e) => setLongTermComment(e.target.value)}
+                  onChange={(e) => {
+                    if (!e.target.value) {
+                      setShowLongComment(false);
+                      setLongTermComment("");
+                    } else {
+                      setLongTermComment(e.target.value);
+                    }
+                  }}
                   sx={{ mt: 1 }}
                 />
               )}
@@ -532,7 +559,7 @@ export default function TherapyPlanPage() {
                           width: "100%",
                         }}
                       >
-                        <AttachmentIcon />
+                        <AttachmentIcon sx={{ color: "primary.icon" }} />
                         <Typography variant="body2">
                           {plan.reference?.name || "Attach Reference"}
                         </Typography>

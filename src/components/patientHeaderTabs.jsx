@@ -25,8 +25,6 @@ const PatientHeaderTabs = () => {
         minHeight: "auto",
         height: "auto",
         p: 0,
-        "& .MuiTabs-root": { width: "100%" },
-        "& .MuiTabs-scroller": { width: "100%" },
         "& .MuiTabs-flexContainer": {
           alignItems: "center",
         },
@@ -36,6 +34,7 @@ const PatientHeaderTabs = () => {
         "& .MuiTab-root": {
           minHeight: "auto",
           height: "auto",
+          minWidth: "8rem",
           py: 0.5,
           px: 1.5,
           color: theme.palette.text.secondary,
@@ -44,12 +43,11 @@ const PatientHeaderTabs = () => {
           fontFamily: "regular",
           textTransform: "none",
           fontSize: 14,
-          lineHeight: 1.2,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           "&:hover": {
-            backgroundColor: theme.palette.action.hover,
+            opacity: 0.8,
           },
         },
         "& .Mui-selected": {
@@ -72,7 +70,7 @@ const PatientHeaderTabs = () => {
         return (
           <Tab
             key={index}
-            icon={<RenderIcon fontSize="small" />}
+            icon={<RenderIcon fontSize="medium" />}
             label={tabTitle}
             value={index}
             disableRipple

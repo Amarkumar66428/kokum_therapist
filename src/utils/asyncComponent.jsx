@@ -14,7 +14,6 @@ const defaultFallback = (
       height: "100vh",
     }}
   >
-    <img src="src/assets/svg/welcomeTitle.svg" alt="Loading..." />
     <CircularProgress color="inherit" />
   </Box>
 );

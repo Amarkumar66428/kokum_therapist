@@ -122,7 +122,8 @@ function BasicDetails({ onNext }) {
         body.append("motherName", values.motherName || "");
         body.append("location", values.location || "");
         body.append("email", values.email || "");
-        if (values.password) body.append("password", values.password);
+        if (values.password && !isEdit)
+          body.append("password", values.password);
         body.append("diagnosisReportText", values.diagnosisReport || "");
 
         let pidForNext = values.patientId;
@@ -139,6 +140,7 @@ function BasicDetails({ onNext }) {
 
         const created = data?.data ?? data;
         pidForNext =
+          patientId ||
           created?.patientId ||
           created?.basicDetails?.patientId ||
           values.patientId ||
@@ -210,6 +212,7 @@ function BasicDetails({ onNext }) {
     fullWidth: true,
     size: "medium",
     variant: "outlined",
+    fontFamily: "regular",
   });
 
   const Label = ({ children }) => (
@@ -220,42 +223,25 @@ function BasicDetails({ onNext }) {
 
   return (
     <Box>
-      <AppBar
-        position="sticky"
-        color="inherit"
-        elevation={0}
-        sx={{
-          boxShadow: "none",
-          borderRadius: 2,
-        }}
-      >
-        <Toolbar sx={{ px: 2 }}>
-          <Typography>
-            {isEdit ? "Edit Basic Details" : "Basic Details"}
-          </Typography>
-        </Toolbar>
-      </AppBar>
       <Box component="form" onSubmit={handleSubmit} noValidate>
         {prefilling && <LinearProgress sx={{ mb: 2 }} />}
         <Paper
           elevation={0}
           sx={{
-            mt: 2,
             mx: "auto",
             p: { xs: 2, sm: 3, md: 4 },
             borderRadius: 2,
           }}
         >
           <Grid container spacing={2.5}>
-            {!isEdit && (
-              <Grid size={GridSize}>
-                <Label>Patient ID</Label>
-                <TextField
-                  placeholder="Enter Patient ID"
-                  {...field("patientId")}
-                />
-              </Grid>
-            )}
+            <Grid size={GridSize}>
+              <Label>Patient ID</Label>
+              <TextField
+                placeholder="Enter Patient ID"
+                disabled={isEdit}
+                {...field("patientId")}
+              />
+            </Grid>
 
             <Grid size={GridSize}>
               <Label>Patient Name</Label>
@@ -300,22 +286,25 @@ function BasicDetails({ onNext }) {
                 type="email"
                 placeholder="Enter Email"
                 autoComplete="email"
+                disabled={isEdit}
                 {...field("email")}
               />
             </Grid>
 
             <Grid size={GridSize}>
-              <Label>{isEdit ? "New Password (optional)" : "Password"}</Label>
+              <Label>{isEdit ? "Password" : "New Password"}</Label>
               <TextField
                 placeholder="Enter Password"
                 type={showPassword ? "text" : "password"}
                 autoComplete="new-password"
+                disabled={isEdit}
                 {...field("password")}
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="end">
                       <IconButton
                         aria-label="toggle password visibility"
+                        disabled={isEdit}
                         onClick={() => setShowPassword((s) => !s)}
                       >
                         {showPassword ? <VisibilityOff /> : <Visibility />}
@@ -355,7 +344,7 @@ function BasicDetails({ onNext }) {
                 <Grid size={{ xs: "auto" }}>
                   <Button
                     variant="outlined"
-                    startIcon={<AttachFile />}
+                    startIcon={<AttachFile sx={{ color: "primary.icon" }} />}
                     onClick={() => fileRef.current?.click()}
                   >
                     {values.file ? "Change File" : "Attach File"}

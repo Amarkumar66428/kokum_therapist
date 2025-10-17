@@ -1,4 +1,4 @@
-export const formatTo12Hour = (time) => {
+const formatTo12Hour = (time) => {
   const date = time instanceof Date ? time : new Date(time);
 
   if (isNaN(date.getTime())) {
@@ -12,7 +12,7 @@ export const formatTo12Hour = (time) => {
   });
 };
 
-export const formatToDateAndTime = (time) => {
+const formatToDateAndTime = (time) => {
   const date = time instanceof Date ? time : new Date(time);
 
   if (isNaN(date.getTime())) {
@@ -30,7 +30,7 @@ export const formatToDateAndTime = (time) => {
   });
 };
 
-export function formatDate(isoString, format = "DD/MM/YYYY") {
+function formatDate(isoString, format = "DD/MM/YYYY") {
   const date = new Date(isoString);
 
   const map = {
@@ -41,3 +41,22 @@ export function formatDate(isoString, format = "DD/MM/YYYY") {
 
   return format.replace(/DD|MM|YYYY/g, (match) => map[match]);
 }
+
+const getTodayDate = (type = "YYYY-MM-DD") => {
+  const today = new Date();
+  const local = new Date(today.getTime() - today.getTimezoneOffset() * 60000);
+  switch (type) {
+    case "YYYY-MM-DD":
+      return local.toISOString().split("T")[0];
+    case "YYYY-MM-DD HH:mm:ss":
+      return local.toISOString();
+    case "DD/MM/YYYY":
+      return formatDate(local.toISOString(), type);
+    case "DD/MM/YYYY HH:mm:ss":
+      return formatDate(local.toISOString(), type);
+    default:
+      return local.toISOString().split("T")[0];
+  }
+};
+
+export { formatTo12Hour, formatToDateAndTime, formatDate, getTodayDate };

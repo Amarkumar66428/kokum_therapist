@@ -20,7 +20,7 @@ import SkeletonBlock from "../../components/skeleton";
 import SemiBoldText from "../../components/typography/semiBoldText";
 import RegularText from "../../components/typography/regularText";
 import { AppColors, ChartColors } from "../../constant/appColors";
-import { formatTo12Hour } from "../../utils/helper";
+import { formatTo12Hour, getTodayDate } from "../../utils/helper";
 import DailyActivities from "../../components/activityCard";
 import {
   BORDER_RADIUS,
@@ -100,9 +100,7 @@ const PatientDetails = () => {
   const [dailyActivities, setDailyActivities] = useState([]);
   const [routines, setRoutines] = useState([]);
   const [appointments, setAppointments] = useState([]);
-  const [selectedDate, setSelectedDate] = useState(
-    new Date().toISOString().split("T")[0]
-  );
+  const [selectedDate, setSelectedDate] = useState(getTodayDate("YYYY-MM-DD"));
 
   const formatActivityForFrontend = (backendActivity) => ({
     id: backendActivity._id,
@@ -235,7 +233,7 @@ const PatientDetails = () => {
         </Grid>
         <Grid size={{ xs: 12, md: 8 }}>
           <Box>
-            <SemiBoldText>Therapy Type</SemiBoldText>
+            <SemiBoldText sx={{ mb: SPACING.XXS }}>Therapy Type</SemiBoldText>
             <Box
               sx={{
                 display: "flex",

@@ -245,8 +245,10 @@ const PatientCard = ({ patient }) => {
       </Collapse>
 
       <Box sx={{ display: "flex", alignItems: "center", gap: 2, mt: 2 }}>
-        <Leaderboard sx={{ color: "primary.icon", fontSize: ICON_SIZE.MD }} />
-        <SemiBoldText>{aggressionValue || "0"}%</SemiBoldText>
+        <img src="/src/assets/svg/barIcon.svg" alt="medalIcon" />
+        <SemiBoldText sx={{ fontSize: 18 }}>
+          {aggressionValue || "0"}%
+        </SemiBoldText>
         <RegularText>{aggression || "No Aggression"}</RegularText>
       </Box>
       <Modal

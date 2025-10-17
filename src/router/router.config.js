@@ -9,6 +9,7 @@ import {
 } from "@mui/icons-material";
 import { FiSlack } from "react-icons/fi";
 import { CiDesktopMouse2 } from "react-icons/ci";
+import { BsPerson } from "react-icons/bs";
 import asyncComponent from "../utils/asyncComponent.jsx";
 
 export const authRouters = [
@@ -108,7 +109,7 @@ export const appRouters = [
     isPatientView: true,
     title: "Patient Details",
     tabTitle: "User",
-    icon: PersonOutlineOutlined,
+    icon: BsPerson,
     component: asyncComponent(() =>
       import("../pages/patientDetails/index.jsx")
     ),
